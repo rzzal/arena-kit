@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ARENA KIT — Tournament Manager</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏆</text></svg>">
+
+  <!-- ✏️ FONT: Chakra Petch (judul/angka skor) + Plus Jakarta Sans (isi).
+       Jika offline saat event, ganti dengan font lokal di folder /fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Latar dekoratif (grid + glow), diatur di style.css -->
+  <div class="bg-grid" aria-hidden="true"></div>
+
+  <!-- ================= HEADER ================= -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-logo">🎮</div>
+      <div>
+        <h1 class="brand-name">ARENA<span>KIT</span></h1>
+        <p class="brand-sub">Tournament Ops Center</p>
+      </div>
+    </div>
+    <!-- Chip status turnamen (diisi oleh js/app.js) -->
+    <div class="status-chips" id="statusChips"></div>
+  </header>
+
+  <!-- ================= NAVIGASI ================= -->
+  <nav class="mainnav" id="mainNav">
+    <button class="nav-btn active" data-view="dashboard" onclick="switchView('dashboard')">📊 Dashboard</button>
+    <button class="nav-btn" data-view="teams" onclick="switchView('teams')">👥 Tim <span class="pill" id="pillTeams">0</span></button>
+    <button class="nav-btn fmt" data-view="bracket" data-format="bracket" onclick="switchView('bracket')">🏆 Bracket</button>
+    <button class="nav-btn fmt" data-view="league" data-format="league" onclick="switchView('league')">📋 Liga</button>
+    <button class="nav-btn fmt" data-view="battle" data-format="battle" onclick="switchView('battle')">🔥 Battle Points</button>
+    <button class="nav-btn" data-view="settings" onclick="switchView('settings')">⚙️ Pengaturan</button>
+  </nav>
+
+  <main>
+
+    <!-- ============ VIEW: DASHBOARD ============ -->
+    <section id="view-dashboard" class="view active">
+      <div id="championBanner"></div>
+      <div class="stat-grid" id="dashTiles"></div>
+      <div class="dash-cols">
+        <div class="card">
+          <h2 class="card-title">⚡ Hasil Terbaru</h2>
+          <div id="recentResults"></div>
+        </div>
+        <div class="card">
+          <h2 class="card-title">🚀 Cara Pakai</h2>
+          <ol class="steps">
+            <li><b>Pengaturan</b> — isi nama event, game, format & aturan poin.</li>
+            <li><b>Tim</b> — daftarkan semua peserta.</li>
+            <li><b>Bracket / Liga / Battle</b> — klik "Generate", lalu input skor tiap match.</li>
+            <li><b>Dashboard</b> — pantau progres & juara otomatis. 🏆</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ VIEW: TIM ============ -->
+    <section id="view-teams" class="view">
+      <div class="card">
+        <h2 class="card-title">➕ Daftarkan Tim</h2>
+        <form class="team-form" onsubmit="addTeam(event)">
+          <input id="tName" placeholder="Nama tim * (wajib)" required maxlength="30">
+          <input id="tTag" placeholder="Tag (mis. EVOS)" maxlength="6" style="text-transform:uppercase">
+          <input id="tPlayers" placeholder="Nama player, pisahkan koma" class="grow">
+          <button class="btn btn-gold" type="submit">+ Tambah Tim</button>
+        </form>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <h2 class="card-title">👥 Tim Terdaftar</h2>
+          <button class="btn btn-ghost btn-sm" onclick="shuffleTeams()">🎲 Acak Urutan Seed</button>
+        </div>
+        <div id="teamList"></div>
+      </div>
+    </section>
+
+    <!-- ============ VIEW: BRACKET ============ -->
+    <section id="view-bracket" class="view">
+      <div class="card">
+        <div class="card-head wrap">
+          <div>
+            <h2 class="card-title">🏆 Bagan Gugur (Single Elimination)</h2>
+            <p class="hint" id="bracketInfo"></p>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-ghost btn-sm" onclick="generateBracket(true)">🎲 Generate + Acak</button>
+            <button class="btn btn-gold" onclick="generateBracket(false)">⚡ Generate Bracket</button>
+            <button class="btn btn-ghost btn-sm" onclick="copyBracket()">📋 Salin Jadwal</button>
+          </div>
+        </div>
+        <div id="bracketWrap" class="bracket-scroll"></div>
+      </div>
+    </section>
+
+    <!-- ============ VIEW: LIGA ============ -->
+    <section id="view-league" class="view">
+      <div class="card">
+        <div class="card-head wrap">
+          <div>
+            <h2 class="card-title">📋 Sistem Liga (Round Robin)</h2>
+            <p class="hint">Semua tim saling bertemu. Menang/Seri/Kalah dapat poin sesuai Pengaturan.</p>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-gold" onclick="generateLeague()">⚡ Generate Jadwal</button>
+            <button class="btn btn-ghost btn-sm" onclick="copyLeague()">📋 Salin Jadwal</button>
+          </div>
+        </div>
+        <div id="leagueFixtures"></div>
+      </div>
+      <div class="card">
+        <h2 class="card-title">🏅 Klasemen</h2>
+        <div id="leagueTable"></div>
+      </div>
+    </section>
+
+    <!-- ============ VIEW: BATTLE POINTS ============ -->
+    <section id="view-battle" class="view">
+      <div class="card">
+        <div class="card-head wrap">
+          <div>
+            <h2 class="card-title">🔥 Battle Points (ala Free Fire / PUBG)</h2>
+            <p class="hint" id="battleInfo"></p>
+          </div>
+          <button class="btn btn-gold" onclick="addBattle()">➕ Tambah Match</button>
+        </div>
+        <div id="battleList"></div>
+      </div>
+      <div class="card">
+        <h2 class="card-title">🏅 Klasemen Battle</h2>
+        <div id="battleTable"></div>
+      </div>
+    </section>
+
+    <!-- ============ VIEW: PENGATURAN ============ -->
+    <section id="view-settings" class="view">
+      <form class="card" onsubmit="submitSettings(event)">
+        <h2 class="card-title">⚙️ Pengaturan Turnamen</h2>
+        <div class="form-grid">
+          <label>Nama Turnamen <input id="stName" required placeholder="mis. Piala Warnet Ceria 2026"></label>
+          <label>Game
+            <!-- ✏️ Daftar game bisa ditambah di js/config.js (GAME_PRESETS) -->
+            <select id="stGame" onchange="applyGamePreset(this.value)">
+              <option value="mlbb">Mobile Legends (MLBB)</option>
+              <option value="ff">Free Fire (FF)</option>
+              <option value="pubg">PUBG Mobile</option>
+              <option value="valorant">Valorant</option>
+              <option value="efootball">eFootball</option>
+            </select>
+          </label>
+          <label>Lokasi / Platform <input id="stVenue" placeholder="mis. Warnet GG / Online via Zoom"></label>
+          <label>Tanggal Mulai <input id="stDate" type="date"></label>
+          <label>Total Hadiah <input id="stPrize" placeholder="mis. Rp 5.000.000"></label>
+          <label>Mode Pelaksanaan
+            <div class="radio-row">
+              <label class="mini"><input type="radio" name="stMode" value="online"> 🌐 Online</label>
+              <label class="mini"><input type="radio" name="stMode" value="offline" checked> 🏟️ Offline</label>
+            </div>
+          </label>
+        </div>
+
+        <h3 class="form-sub">Format Turnamen</h3>
+        <div class="format-cards">
+          <label class="format-card"><input type="radio" name="stFormat" value="bracket" onchange="toggleRulePanels()">
+            <b>🏆 Bracket</b><small>Sistem gugur. Cocok: MLBB, Valorant.</small></label>
+          <label class="format-card"><input type="radio" name="stFormat" value="league" onchange="toggleRulePanels()">
+            <b>📋 Liga</b><small>Round robin + klasemen poin.</small></label>
+          <label class="format-card"><input type="radio" name="stFormat" value="battle" onchange="toggleRulePanels()">
+            <b>🔥 Battle Points</b><small>Placement + eliminasi. Cocok: FF, PUBG.</small></label>
+        </div>
+
+        <!-- Panel aturan BRACKET -->
+        <div class="rule-panel" data-format="bracket">
+          <h3 class="form-sub">Aturan Bracket</h3>
+          <div class="form-grid small">
+            <label>Best of (BO)
+              <select id="stBo"><option value="1">BO 1</option><option value="3">BO 3</option><option value="5">BO 5</option><option value="7">BO 7</option></select>
+            </label>
+            <label class="mini check"><input type="checkbox" id="stThird"> Perebutkan Juara 3</label>
+          </div>
+        </div>
+
+        <!-- Panel aturan LIGA -->
+        <div class="rule-panel" data-format="league">
+          <h3 class="form-sub">Aturan Poin Liga</h3>
+          <div class="form-grid small">
+            <label>Poin Menang <input id="stWin" type="number" value="3" min="0"></label>
+            <label>Poin Seri <input id="stDraw" type="number" value="1" min="0"></label>
+            <label>Poin Kalah <input id="stLose" type="number" value="0" min="0"></label>
+          </div>
+        </div>
+
+        <!-- Panel aturan BATTLE -->
+        <div class="rule-panel" data-format="battle">
+          <h3 class="form-sub">Aturan Battle Points</h3>
+          <div class="form-grid small">
+            <label class="wide">Poin Placement (urutan juara 1, 2, 3, … pisahkan koma)
+              <input id="stPlacement" placeholder="12,10,9,8,7,6,5,4,3,2,1,1">
+            </label>
+            <label>Poin per Eliminasi <input id="stKill" type="number" value="1" min="0"></label>
+          </div>
+        </div>
+
+        <div class="btn-row" style="margin-top:20px">
+          <button class="btn btn-gold" type="submit">💾 Simpan Pengaturan</button>
+        </div>
+      </form>
+
+      <div class="card danger-zone">
+        <h2 class="card-title">🗄️ Data</h2>
+        <div class="btn-row">
+          <button class="btn btn-ghost" onclick="exportData()">⬇️ Export JSON</button>
+          <button class="btn btn-ghost" onclick="document.getElementById('importFile').click()">⬆️ Import JSON</button>
+          <input type="file" id="importFile" accept=".json" hidden onchange="importData(this)">
+          <button class="btn btn-ghost" onclick="loadDemo()">🎮 Muat Data Contoh</button>
+          <button class="btn btn-danger" onclick="resetAll()">🗑️ Reset Semua</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Tempat modal & notifikasi dirender oleh JS -->
+  <div id="modalRoot"></div>
+  <div id="toastRoot"></div>
+
+  <!-- ✏️ URUTAN SCRIPT JANGAN DITUKAR (saling bergantung) -->
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/teams.js"></script>
+  <script src="js/bracket.js"></script>
+  <script src="js/league.js"></script>
+  <script src="js/battle.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
