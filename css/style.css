@@ -1,0 +1,314 @@
+/* ============================================================
+   style.css — ARENA KIT
+   ✏️ GANTI TEMA: ubah nilai variabel di :root saja.
+   ============================================================ */
+
+/* ---------- 1. VARIABEL WARNA & FONT ---------- */
+:root{
+  --bg:      #0a0f1e;   /* latar utama */
+  --bg2:     #0d1526;   /* latar gradasi */
+  --panel:   #121c33;   /* kartu */
+  --panel2:  #172440;   /* kartu terang */
+  --line:    #223154;   /* garis tepi */
+  --line2:   #31456f;
+  --text:    #eaf0fb;
+  --muted:   #8fa0c2;
+  --gold:    #ffc53d;   /* aksen juara / tombol utama */
+  --red:     #ff4d5e;   /* aksen danger / live */
+  --blue:    #4da3ff;   /* aksen info */
+  --green:   #3ddc84;   /* aksen sukses */
+  --fd: 'Chakra Petch', sans-serif;        /* font display */
+  --fb: 'Plus Jakarta Sans', sans-serif;   /* font body */
+}
+
+/* ---------- 2. RESET & DASAR ---------- */
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--fb); color:var(--text); min-height:100vh;
+  background:
+    radial-gradient(900px 500px at 85% -10%, rgba(255,197,61,.10), transparent 60%),
+    radial-gradient(800px 500px at -10% 30%, rgba(77,163,255,.10), transparent 60%),
+    linear-gradient(180deg, var(--bg2), var(--bg) 40%);
+  background-attachment:fixed;
+}
+::selection{background:var(--gold);color:#1a1200}
+
+/* Grid dekoratif di belakang konten */
+.bg-grid{
+  position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.5;
+  background-image:
+    linear-gradient(rgba(120,150,210,.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(120,150,210,.05) 1px, transparent 1px);
+  background-size:44px 44px;
+  mask-image:radial-gradient(ellipse at 50% 0%, #000 30%, transparent 80%);
+}
+main, .topbar, .mainnav{position:relative; z-index:1}
+
+/* ---------- 3. HEADER ---------- */
+.topbar{
+  display:flex; align-items:center; justify-content:space-between; gap:16px;
+  padding:18px 28px; border-bottom:1px solid var(--line);
+  background:rgba(10,15,30,.6); backdrop-filter:blur(6px);
+}
+.brand{display:flex; align-items:center; gap:14px}
+.brand-logo{
+  width:52px;height:52px; display:grid; place-items:center; font-size:26px;
+  background:linear-gradient(145deg,#1b2a4d,#101a33);
+  clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%); /* bentuk hexagon */
+  border:1px solid var(--line2); box-shadow:0 0 24px rgba(255,197,61,.15);
+}
+.brand-name{font-family:var(--fd); font-size:26px; letter-spacing:2px; line-height:1}
+.brand-name span{color:var(--gold)}
+.brand-sub{font-size:11px; color:var(--muted); letter-spacing:3px; text-transform:uppercase}
+.status-chips{display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-end}
+.chip{
+  font-family:var(--fd); font-size:11px; letter-spacing:1px; padding:6px 12px;
+  border:1px solid var(--line2); border-radius:99px; color:var(--text);
+  background:var(--panel); transition:.25s;
+}
+.chip:hover{border-color:var(--gold); transform:translateY(-2px)}
+.chip.gold{border-color:var(--gold); color:var(--gold)}
+
+/* ---------- 4. NAVIGASI ---------- */
+.mainnav{
+  position:sticky; top:0; z-index:50; display:flex; gap:4px; overflow-x:auto;
+  padding:10px 24px; border-bottom:1px solid var(--line);
+  background:rgba(10,15,30,.85); backdrop-filter:blur(8px);
+}
+.nav-btn{
+  font-family:var(--fd); font-size:13px; letter-spacing:1.5px; text-transform:uppercase;
+  color:var(--muted); background:none; border:none; padding:10px 16px; cursor:pointer;
+  position:relative; white-space:nowrap; transition:.2s; display:flex; align-items:center; gap:8px;
+}
+.nav-btn:hover{color:var(--text); transform:translateY(-1px)}
+.nav-btn.active{color:var(--gold)}
+.nav-btn.active::after{ /* garis bawah emas */
+  content:''; position:absolute; left:12px; right:12px; bottom:2px; height:3px;
+  background:var(--gold); border-radius:2px; box-shadow:0 0 10px var(--gold);
+}
+.nav-btn .pill{
+  font-size:11px; background:var(--panel2); border:1px solid var(--line2);
+  padding:1px 8px; border-radius:99px; color:var(--text);
+}
+.nav-btn.fmt.is-active-format::before{ /* titik penanda format yang aktif */
+  content:''; width:7px; height:7px; border-radius:50%;
+  background:var(--green); box-shadow:0 0 8px var(--green); animation:pulse 1.6s infinite;
+}
+
+/* ---------- 5. LAYOUT & VIEW ---------- */
+main{max-width:1280px; margin:0 auto; padding:26px 24px 80px}
+.view{display:none}
+.view.active{display:block; animation:fadeUp .4s ease both}
+.card{
+  background:linear-gradient(180deg,var(--panel),rgba(18,28,51,.7));
+  border:1px solid var(--line); border-radius:14px; padding:22px; margin-bottom:22px;
+  transition:border-color .3s;
+}
+.card:hover{border-color:var(--line2)}
+.card-title{font-family:var(--fd); font-size:17px; letter-spacing:1px; margin-bottom:14px}
+.card-head{display:flex; justify-content:space-between; align-items:center; gap:14px; margin-bottom:8px}
+.card-head.wrap{flex-wrap:wrap}
+.hint{color:var(--muted); font-size:13px; max-width:560px}
+.btn-row{display:flex; gap:10px; flex-wrap:wrap}
+
+/* ---------- 6. TOMBOL & FORM ---------- */
+.btn{
+  font-family:var(--fd); letter-spacing:1px; font-size:13px; cursor:pointer;
+  padding:10px 18px; border-radius:9px; border:1px solid var(--line2);
+  background:var(--panel2); color:var(--text); transition:.2s;
+}
+.btn:hover{transform:translateY(-2px); border-color:var(--blue)}
+.btn:active{transform:translateY(0)}
+.btn-gold{background:var(--gold); border-color:var(--gold); color:#221600; font-weight:700}
+.btn-gold:hover{box-shadow:0 6px 20px rgba(255,197,61,.35); border-color:var(--gold)}
+.btn-danger{background:transparent; border-color:var(--red); color:var(--red)}
+.btn-danger:hover{background:rgba(255,77,94,.12); border-color:var(--red)}
+.btn-ghost{background:transparent}
+.btn-sm{padding:7px 12px; font-size:12px}
+
+input,select{
+  font-family:var(--fb); font-size:14px; color:var(--text);
+  background:#0d1526; border:1px solid var(--line2); border-radius:8px; padding:10px 12px;
+  outline:none; transition:.2s; width:100%;
+}
+input:focus,select:focus{border-color:var(--gold); box-shadow:0 0 0 3px rgba(255,197,61,.15)}
+label{font-size:13px; color:var(--muted); display:flex; flex-direction:column; gap:6px}
+label.mini{flex-direction:row; align-items:center; gap:8px; color:var(--text)}
+label.mini input{width:auto}
+.form-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px}
+.form-grid.small{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+label.wide{grid-column:1/-1}
+.form-sub{font-family:var(--fd); letter-spacing:1px; font-size:14px; margin:22px 0 12px; color:var(--gold)}
+.radio-row{display:flex; gap:16px}
+.format-cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px}
+.format-card{
+  border:1px solid var(--line2); border-radius:12px; padding:14px; cursor:pointer;
+  display:flex; flex-direction:column; gap:4px; transition:.2s; color:var(--text);
+}
+.format-card:hover{transform:translateY(-2px)}
+.format-card:has(input:checked){border-color:var(--gold); background:rgba(255,197,61,.07); box-shadow:0 0 18px rgba(255,197,61,.12)}
+.format-card small{color:var(--muted); font-weight:400}
+.format-card input{width:auto}
+.rule-panel{display:none; border:1px dashed var(--line2); border-radius:12px; padding:16px; margin-top:14px}
+.rule-panel.show{display:block; animation:fadeUp .3s}
+.team-form{display:flex; gap:10px; flex-wrap:wrap}
+.team-form input{flex:1; min-width:160px}
+.team-form .grow{flex:2}
+
+/* ---------- 7. DASHBOARD ---------- */
+.stat-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:14px; margin-bottom:22px}
+.tile{
+  background:linear-gradient(180deg,var(--panel),rgba(18,28,51,.6));
+  border:1px solid var(--line); border-left:4px solid var(--blue);
+  border-radius:12px; padding:16px 18px; transition:.25s; animation:fadeUp .5s both;
+}
+.tile:nth-child(2){border-left-color:var(--gold); animation-delay:.06s}
+.tile:nth-child(3){border-left-color:var(--green); animation-delay:.12s}
+.tile:nth-child(4){border-left-color:var(--red); animation-delay:.18s}
+.tile:hover{transform:translateY(-4px); border-color:var(--line2)}
+.tile .t-label{font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--muted)}
+.tile .t-value{font-family:var(--fd); font-size:32px; font-weight:700; margin-top:4px}
+.dash-cols{display:grid; grid-template-columns:1.4fr 1fr; gap:22px}
+.steps{margin-left:18px; color:var(--muted); display:grid; gap:10px; font-size:14px}
+.steps b{color:var(--text)}
+.result-row{
+  display:flex; justify-content:space-between; gap:10px; padding:10px 4px;
+  border-bottom:1px dashed var(--line); font-size:14px; animation:fadeUp .3s both;
+}
+.result-row:last-child{border:none}
+.result-row .sc{font-family:var(--fd); color:var(--gold)}
+
+/* Banner juara — muncul saat turnamen selesai */
+.champion-banner{
+  border:1px solid var(--gold); border-radius:16px; padding:28px; text-align:center;
+  margin-bottom:22px; position:relative; overflow:hidden;
+  background:radial-gradient(500px 200px at 50% -50%, rgba(255,197,61,.25), transparent), var(--panel);
+  animation:popIn .5s ease both;
+}
+.champion-banner .cb-label{letter-spacing:6px; font-size:12px; color:var(--gold)}
+.champion-banner .cb-name{font-family:var(--fd); font-size:clamp(28px,5vw,46px); font-weight:700; text-shadow:0 0 30px rgba(255,197,61,.5)}
+.champion-banner .cb-cup{font-size:44px; animation:bounce 2s infinite}
+
+/* ---------- 8. TABEL ---------- */
+table{width:100%; border-collapse:collapse; font-size:14px}
+th{
+  font-family:var(--fd); font-size:11px; letter-spacing:1.5px; text-transform:uppercase;
+  color:var(--muted); text-align:left; padding:10px 12px; border-bottom:1px solid var(--line2);
+}
+td{padding:10px 12px; border-bottom:1px solid var(--line)}
+tbody tr{transition:.15s}
+tbody tr:hover{background:rgba(77,163,255,.06)}
+td.num,th.num{text-align:center}
+tr.rank-1 td{background:rgba(255,197,61,.08)}
+tr.rank-1 td:first-child{color:var(--gold); font-weight:700}
+.seed-no{
+  font-family:var(--fd); width:28px; height:28px; display:inline-grid; place-items:center;
+  border:1px solid var(--line2); border-radius:8px; color:var(--muted); font-size:12px;
+}
+.tag-badge{
+  font-family:var(--fd); font-size:11px; padding:2px 8px; border-radius:6px;
+  background:var(--panel2); border:1px solid var(--line2); color:var(--blue); margin-right:8px;
+}
+.icon-btn{background:none; border:none; cursor:pointer; font-size:16px; opacity:.7; transition:.15s}
+.icon-btn:hover{opacity:1; transform:scale(1.2)}
+
+/* ---------- 9. BRACKET ---------- */
+.bracket-scroll{overflow-x:auto; padding:10px 4px 18px}
+.bracket{display:flex; gap:44px; min-width:max-content}
+.b-round{min-width:236px; display:flex; flex-direction:column; justify-content:space-around; gap:18px; min-height:100%}
+.b-round-title{
+  font-family:var(--fd); font-size:12px; letter-spacing:2px; color:var(--muted);
+  text-align:center; padding-bottom:8px; border-bottom:1px solid var(--line); margin-bottom:4px;
+  position:sticky; top:0;
+}
+.b-item{position:relative}
+/* Garis penghubung antar ronde */
+.b-item::before,.b-item::after{content:''; position:absolute; top:50%; width:22px; height:2px; background:var(--line2)}
+.b-item::before{left:-22px}   /* masuk */
+.b-item::after{right:-22px}   /* keluar */
+.b-round:first-child .b-item::before,.b-round:last-child .b-item::after{display:none}
+
+.match{
+  background:var(--panel2); border:1px solid var(--line2); border-radius:12px;
+  padding:10px; transition:.25s; position:relative;
+}
+.match:hover{transform:translateY(-2px); border-color:var(--blue); box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.match.done{border-color:rgba(61,220,132,.4)}
+.match.bye{opacity:.55}
+.m-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:11px; color:var(--muted)}
+.m-status{font-family:var(--fd); font-size:10px; letter-spacing:1px; padding:2px 8px; border-radius:99px; border:1px solid var(--line2)}
+.m-status.done{color:var(--green); border-color:var(--green)}
+.m-status.ready{color:var(--blue); border-color:var(--blue)}
+.m-status.bye{color:var(--muted)}
+.m-team{display:flex; align-items:center; gap:8px; padding:6px; border-radius:8px; margin-bottom:4px}
+.m-team .name{flex:1; font-size:13px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.m-team .name small{color:var(--muted); font-weight:400}
+.m-team input{width:48px; text-align:center; font-family:var(--fd); font-weight:700; padding:6px 4px}
+.m-team.winner{background:rgba(61,220,132,.10)}
+.m-team.winner .name{color:var(--green)}
+.m-team.loser .name{opacity:.55}
+.match .btn{width:100%; margin-top:6px; padding:7px}
+.podium{display:grid; gap:10px}
+.podium div{
+  border:1px solid var(--line2); border-radius:10px; padding:12px;
+  font-family:var(--fd); display:flex; gap:10px; align-items:center; background:var(--panel2);
+}
+.podium .p1{border-color:var(--gold); box-shadow:0 0 24px rgba(255,197,61,.2)}
+
+/* ---------- 10. LIGA & BATTLE ---------- */
+.round-block{border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:14px}
+.round-block h4{font-family:var(--fd); letter-spacing:2px; font-size:12px; color:var(--gold); margin-bottom:10px}
+.fx-row{display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px dashed var(--line); flex-wrap:wrap}
+.fx-row:last-child{border:none}
+.fx-row .fname{flex:1; min-width:110px; font-size:13px; font-weight:600}
+.fx-row .fname.right{text-align:right}
+.fx-row input{width:52px; text-align:center; font-family:var(--fd)}
+.fx-row .vs{color:var(--muted); font-family:var(--fd); font-size:11px}
+.fx-done{color:var(--green); font-family:var(--fd); font-size:11px; letter-spacing:1px}
+
+/* ---------- 11. EMPTY STATE ---------- */
+.empty{
+  text-align:center; padding:44px 20px; color:var(--muted);
+  border:2px dashed var(--line2); border-radius:14px;
+}
+.empty .big{font-size:42px; display:block; margin-bottom:10px; filter:grayscale(.3)}
+
+/* ---------- 12. MODAL & TOAST ---------- */
+.modal-back{
+  position:fixed; inset:0; background:rgba(4,8,18,.75); backdrop-filter:blur(4px);
+  display:grid; place-items:center; z-index:100; animation:fadeIn .2s;
+}
+.modal{
+  background:var(--panel); border:1px solid var(--line2); border-radius:14px;
+  padding:24px; width:min(440px,92vw); animation:popIn .25s ease;
+  display:flex; flex-direction:column; gap:12px;
+}
+.modal h3{font-family:var(--fd); letter-spacing:1px}
+#toastRoot{position:fixed; right:18px; bottom:18px; z-index:200; display:flex; flex-direction:column; gap:10px}
+.toast{
+  font-size:14px; padding:12px 18px; border-radius:10px; color:var(--text);
+  background:var(--panel2); border:1px solid var(--green); box-shadow:0 10px 30px rgba(0,0,0,.4);
+  opacity:0; transform:translateX(30px); transition:.3s;
+}
+.toast.err{border-color:var(--red)}
+.toast.show{opacity:1; transform:translateX(0)}
+
+/* ---------- 13. ANIMASI ---------- */
+@keyframes fadeUp{from{opacity:0; transform:translateY(14px)} to{opacity:1; transform:none}}
+@keyframes fadeIn{from{opacity:0}}
+@keyframes popIn{from{opacity:0; transform:scale(.92)} to{opacity:1; transform:none}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+
+/* ---------- 14. SCROLLBAR & RESPONSIVE ---------- */
+::-webkit-scrollbar{height:10px; width:10px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--line2); border-radius:99px}
+::-webkit-scrollbar-thumb:hover{background:var(--gold)}
+
+@media(max-width:900px){
+  .dash-cols{grid-template-columns:1fr}
+  .topbar{flex-direction:column; align-items:flex-start}
+  .status-chips{justify-content:flex-start}
+}
