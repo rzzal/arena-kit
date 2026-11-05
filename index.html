@@ -1,243 +1,1105 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ARENA KIT — Tournament Manager</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏆</text></svg>">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARENA KIT — Tournament Manager</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏆</text></svg>">
+<!-- ✏️ FONT: kalau offline saat event, ganti dengan font lokal -->
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <!-- ✏️ FONT: Chakra Petch (judul/angka skor) + Plus Jakarta Sans (isi).
-       Jika offline saat event, ganti dengan font lokal di folder /fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+<!-- ============================================================
+     VERSI SATU FILE — semua CSS & JS digabung di sini.
+     ✏️ GANTI TEMA WARNA: ubah variabel di :root bawah ini.
+     ============================================================ -->
+<style>
+:root{
+  --bg:#0a0f1e; --bg2:#0d1526; --panel:#121c33; --panel2:#172440;
+  --line:#223154; --line2:#31456f; --text:#eaf0fb; --muted:#8fa0c2;
+  --gold:#ffc53d; --red:#ff4d5e; --blue:#4da3ff; --green:#3ddc84;
+  --fd:'Chakra Petch',sans-serif; --fb:'Plus Jakarta Sans',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--fb);color:var(--text);min-height:100vh;
+  background:radial-gradient(900px 500px at 85% -10%,rgba(255,197,61,.10),transparent 60%),
+  radial-gradient(800px 500px at -10% 30%,rgba(77,163,255,.10),transparent 60%),
+  linear-gradient(180deg,var(--bg2),var(--bg) 40%);background-attachment:fixed}
+::selection{background:var(--gold);color:#1a1200}
+.bg-grid{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.5;
+  background-image:linear-gradient(rgba(120,150,210,.05) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(120,150,210,.05) 1px,transparent 1px);
+  background-size:44px 44px;mask-image:radial-gradient(ellipse at 50% 0%,#000 30%,transparent 80%)}
+main,.topbar,.mainnav{position:relative;z-index:1}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 28px;
+  border-bottom:1px solid var(--line);background:rgba(10,15,30,.6);backdrop-filter:blur(6px)}
+.brand{display:flex;align-items:center;gap:14px}
+.brand-logo{width:52px;height:52px;display:grid;place-items:center;font-size:26px;
+  background:linear-gradient(145deg,#1b2a4d,#101a33);
+  clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%);
+  border:1px solid var(--line2);box-shadow:0 0 24px rgba(255,197,61,.15)}
+.brand-name{font-family:var(--fd);font-size:26px;letter-spacing:2px;line-height:1}
+.brand-name span{color:var(--gold)}
+.brand-sub{font-size:11px;color:var(--muted);letter-spacing:3px;text-transform:uppercase}
+.status-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+.chip{font-family:var(--fd);font-size:11px;letter-spacing:1px;padding:6px 12px;border:1px solid var(--line2);
+  border-radius:99px;color:var(--text);background:var(--panel);transition:.25s}
+.chip:hover{border-color:var(--gold);transform:translateY(-2px)}
+.chip.gold{border-color:var(--gold);color:var(--gold)}
+.mainnav{position:sticky;top:0;z-index:50;display:flex;gap:4px;overflow-x:auto;padding:10px 24px;
+  border-bottom:1px solid var(--line);background:rgba(10,15,30,.85);backdrop-filter:blur(8px)}
+.nav-btn{font-family:var(--fd);font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);
+  background:none;border:none;padding:10px 16px;cursor:pointer;position:relative;white-space:nowrap;
+  transition:.2s;display:flex;align-items:center;gap:8px}
+.nav-btn:hover{color:var(--text);transform:translateY(-1px)}
+.nav-btn.active{color:var(--gold)}
+.nav-btn.active::after{content:'';position:absolute;left:12px;right:12px;bottom:2px;height:3px;
+  background:var(--gold);border-radius:2px;box-shadow:0 0 10px var(--gold)}
+.nav-btn .pill{font-size:11px;background:var(--panel2);border:1px solid var(--line2);padding:1px 8px;border-radius:99px;color:var(--text)}
+.nav-btn.fmt.is-active-format::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--green);
+  box-shadow:0 0 8px var(--green);animation:pulse 1.6s infinite}
+main{max-width:1280px;margin:0 auto;padding:26px 24px 80px}
+.view{display:none}
+.view.active{display:block;animation:fadeUp .4s ease both}
+.card{background:linear-gradient(180deg,var(--panel),rgba(18,28,51,.7));border:1px solid var(--line);
+  border-radius:14px;padding:22px;margin-bottom:22px;transition:border-color .3s}
+.card:hover{border-color:var(--line2)}
+.card-title{font-family:var(--fd);font-size:17px;letter-spacing:1px;margin-bottom:14px}
+.card-head{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:8px}
+.card-head.wrap{flex-wrap:wrap}
+.hint{color:var(--muted);font-size:13px;max-width:560px}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap}
+.btn{font-family:var(--fd);letter-spacing:1px;font-size:13px;cursor:pointer;padding:10px 18px;border-radius:9px;
+  border:1px solid var(--line2);background:var(--panel2);color:var(--text);transition:.2s}
+.btn:hover{transform:translateY(-2px);border-color:var(--blue)}
+.btn:active{transform:translateY(0)}
+.btn-gold{background:var(--gold);border-color:var(--gold);color:#221600;font-weight:700}
+.btn-gold:hover{box-shadow:0 6px 20px rgba(255,197,61,.35);border-color:var(--gold)}
+.btn-danger{background:transparent;border-color:var(--red);color:var(--red)}
+.btn-danger:hover{background:rgba(255,77,94,.12)}
+.btn-ghost{background:transparent}
+.btn-sm{padding:7px 12px;font-size:12px}
+input,select{font-family:var(--fb);font-size:14px;color:var(--text);background:#0d1526;border:1px solid var(--line2);
+  border-radius:8px;padding:10px 12px;outline:none;transition:.2s;width:100%}
+input:focus,select:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(255,197,61,.15)}
+label{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:6px}
+label.mini{flex-direction:row;align-items:center;gap:8px;color:var(--text)}
+label.mini input{width:auto}
+label.mini.check{margin-top:22px}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.form-grid.small{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+label.wide{grid-column:1/-1}
+.form-sub{font-family:var(--fd);letter-spacing:1px;font-size:14px;margin:22px 0 12px;color:var(--gold)}
+.radio-row{display:flex;gap:16px}
+.format-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.format-card{border:1px solid var(--line2);border-radius:12px;padding:14px;cursor:pointer;display:flex;
+  flex-direction:column;gap:4px;transition:.2s;color:var(--text)}
+.format-card:hover{transform:translateY(-2px)}
+.format-card:has(input:checked){border-color:var(--gold);background:rgba(255,197,61,.07);box-shadow:0 0 18px rgba(255,197,61,.12)}
+.format-card small{color:var(--muted);font-weight:400}
+.format-card input{width:auto}
+.rule-panel{display:none;border:1px dashed var(--line2);border-radius:12px;padding:16px;margin-top:14px}
+.rule-panel.show{display:block;animation:fadeUp .3s}
+.team-form{display:flex;gap:10px;flex-wrap:wrap}
+.team-form input{flex:1;min-width:160px}
+.team-form .grow{flex:2}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:22px}
+.tile{background:linear-gradient(180deg,var(--panel),rgba(18,28,51,.6));border:1px solid var(--line);
+  border-left:4px solid var(--blue);border-radius:12px;padding:16px 18px;transition:.25s;animation:fadeUp .5s both}
+.tile:nth-child(2){border-left-color:var(--gold);animation-delay:.06s}
+.tile:nth-child(3){border-left-color:var(--green);animation-delay:.12s}
+.tile:nth-child(4){border-left-color:var(--red);animation-delay:.18s}
+.tile:hover{transform:translateY(-4px)}
+.tile .t-label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
+.tile .t-value{font-family:var(--fd);font-size:32px;font-weight:700;margin-top:4px}
+.dash-cols{display:grid;grid-template-columns:1.4fr 1fr;gap:22px}
+.steps{margin-left:18px;color:var(--muted);display:grid;gap:10px;font-size:14px}
+.steps b{color:var(--text)}
+.result-row{display:flex;justify-content:space-between;gap:10px;padding:10px 4px;border-bottom:1px dashed var(--line);
+  font-size:14px;animation:fadeUp .3s both}
+.result-row:last-child{border:none}
+.result-row .sc{font-family:var(--fd);color:var(--gold)}
+.champion-banner{border:1px solid var(--gold);border-radius:16px;padding:28px;text-align:center;margin-bottom:22px;
+  background:radial-gradient(500px 200px at 50% -50%,rgba(255,197,61,.25),transparent),var(--panel);animation:popIn .5s ease both}
+.champion-banner .cb-label{letter-spacing:6px;font-size:12px;color:var(--gold)}
+.champion-banner .cb-name{font-family:var(--fd);font-size:clamp(28px,5vw,46px);font-weight:700;text-shadow:0 0 30px rgba(255,197,61,.5)}
+.champion-banner .cb-cup{font-size:44px;animation:bounce 2s infinite}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font-family:var(--fd);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);
+  text-align:left;padding:10px 12px;border-bottom:1px solid var(--line2)}
+td{padding:10px 12px;border-bottom:1px solid var(--line)}
+tbody tr{transition:.15s}
+tbody tr:hover{background:rgba(77,163,255,.06)}
+td.num,th.num{text-align:center}
+tr.rank-1 td{background:rgba(255,197,61,.08)}
+tr.rank-1 td:first-child{color:var(--gold);font-weight:700}
+.seed-no{font-family:var(--fd);width:28px;height:28px;display:inline-grid;place-items:center;border:1px solid var(--line2);
+  border-radius:8px;color:var(--muted);font-size:12px}
+.tag-badge{font-family:var(--fd);font-size:11px;padding:2px 8px;border-radius:6px;background:var(--panel2);
+  border:1px solid var(--line2);color:var(--blue);margin-right:8px}
+.icon-btn{background:none;border:none;cursor:pointer;font-size:16px;opacity:.7;transition:.15s}
+.icon-btn:hover{opacity:1;transform:scale(1.2)}
+.bracket-scroll{overflow-x:auto;padding:10px 4px 18px}
+.bracket{display:flex;gap:44px;min-width:max-content}
+.b-round{min-width:236px;display:flex;flex-direction:column;justify-content:space-around;gap:18px}
+.b-round-title{font-family:var(--fd);font-size:12px;letter-spacing:2px;color:var(--muted);text-align:center;
+  padding-bottom:8px;border-bottom:1px solid var(--line);margin-bottom:4px}
+.b-item{position:relative}
+.b-item::before,.b-item::after{content:'';position:absolute;top:50%;width:22px;height:2px;background:var(--line2)}
+.b-item::before{left:-22px}
+.b-item::after{right:-22px}
+.bracket>.b-round:first-child .b-item::before,.bracket>.b-round:last-child .b-item::after{display:none}
+.match{background:var(--panel2);border:1px solid var(--line2);border-radius:12px;padding:10px;transition:.25s}
+.match:hover{transform:translateY(-2px);border-color:var(--blue);box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.match.done{border-color:rgba(61,220,132,.4)}
+.match.bye{opacity:.55}
+.m-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:11px;color:var(--muted)}
+.m-status{font-family:var(--fd);font-size:10px;letter-spacing:1px;padding:2px 8px;border-radius:99px;border:1px solid var(--line2)}
+.m-status.done{color:var(--green);border-color:var(--green)}
+.m-status.ready{color:var(--blue);border-color:var(--blue)}
+.m-status.bye{color:var(--muted)}
+.m-team{display:flex;align-items:center;gap:8px;padding:6px;border-radius:8px;margin-bottom:4px}
+.m-team .name{flex:1;font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.m-team .name small{color:var(--muted);font-weight:400}
+.m-team input{width:48px;text-align:center;font-family:var(--fd);font-weight:700;padding:6px 4px}
+.m-team.winner{background:rgba(61,220,132,.10)}
+.m-team.winner .name{color:var(--green)}
+.m-team.loser .name{opacity:.55}
+.match .btn{width:100%;margin-top:6px;padding:7px}
+.podium{display:grid;gap:10px}
+.podium div{border:1px solid var(--line2);border-radius:10px;padding:12px;font-family:var(--fd);display:flex;gap:10px;
+  align-items:center;background:var(--panel2)}
+.podium .p1{border-color:var(--gold);box-shadow:0 0 24px rgba(255,197,61,.2)}
+.round-block{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px}
+.round-block h4{font-family:var(--fd);letter-spacing:2px;font-size:12px;color:var(--gold);margin-bottom:10px}
+.fx-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px dashed var(--line);flex-wrap:wrap}
+.fx-row:last-child{border:none}
+.fx-row .fname{flex:1;min-width:110px;font-size:13px;font-weight:600}
+.fx-row .fname.right{text-align:right}
+.fx-row input{width:52px;text-align:center;font-family:var(--fd)}
+.fx-row .vs{color:var(--muted);font-family:var(--fd);font-size:11px}
+.fx-done{color:var(--green);font-family:var(--fd);font-size:11px;letter-spacing:1px}
+.empty{text-align:center;padding:44px 20px;color:var(--muted);border:2px dashed var(--line2);border-radius:14px}
+.empty .big{font-size:42px;display:block;margin-bottom:10px}
+.modal-back{position:fixed;inset:0;background:rgba(4,8,18,.75);backdrop-filter:blur(4px);display:grid;
+  place-items:center;z-index:100;animation:fadeIn .2s}
+.modal{background:var(--panel);border:1px solid var(--line2);border-radius:14px;padding:24px;
+  width:min(440px,92vw);animation:popIn .25s ease;display:flex;flex-direction:column;gap:12px}
+.modal h3{font-family:var(--fd);letter-spacing:1px}
+#toastRoot{position:fixed;right:18px;bottom:18px;z-index:200;display:flex;flex-direction:column;gap:10px}
+.toast{font-size:14px;padding:12px 18px;border-radius:10px;color:var(--text);background:var(--panel2);
+  border:1px solid var(--green);box-shadow:0 10px 30px rgba(0,0,0,.4);opacity:0;transform:translateX(30px);transition:.3s}
+.toast.err{border-color:var(--red)}
+.toast.show{opacity:1;transform:translateX(0)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}}
+@keyframes popIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+::-webkit-scrollbar{height:10px;width:10px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--line2);border-radius:99px}
+::-webkit-scrollbar-thumb:hover{background:var(--gold)}
+@media(max-width:900px){.dash-cols{grid-template-columns:1fr}.topbar{flex-direction:column;align-items:flex-start}.status-chips{justify-content:flex-start}}
+</style>
 </head>
 <body>
 
-  <!-- Latar dekoratif (grid + glow), diatur di style.css -->
-  <div class="bg-grid" aria-hidden="true"></div>
+<div class="bg-grid" aria-hidden="true"></div>
 
-  <!-- ================= HEADER ================= -->
-  <header class="topbar">
-    <div class="brand">
-      <div class="brand-logo">🎮</div>
-      <div>
-        <h1 class="brand-name">ARENA<span>KIT</span></h1>
-        <p class="brand-sub">Tournament Ops Center</p>
+<!-- ================= HEADER ================= -->
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-logo">🎮</div>
+    <div>
+      <h1 class="brand-name">ARENA<span>KIT</span></h1>
+      <p class="brand-sub">Tournament Ops Center</p>
+    </div>
+  </div>
+  <div class="status-chips" id="statusChips"></div>
+</header>
+
+<!-- ================= NAVIGASI ================= -->
+<nav class="mainnav" id="mainNav">
+  <button class="nav-btn active" data-view="dashboard" onclick="switchView('dashboard')">📊 Dashboard</button>
+  <button class="nav-btn" data-view="teams" onclick="switchView('teams')">👥 Tim <span class="pill" id="pillTeams">0</span></button>
+  <button class="nav-btn fmt" data-view="bracket" data-format="bracket" onclick="switchView('bracket')">🏆 Bracket</button>
+  <button class="nav-btn fmt" data-view="league" data-format="league" onclick="switchView('league')">📋 Liga</button>
+  <button class="nav-btn fmt" data-view="battle" data-format="battle" onclick="switchView('battle')">🔥 Battle Points</button>
+  <button class="nav-btn" data-view="settings" onclick="switchView('settings')">⚙️ Pengaturan</button>
+</nav>
+
+<main>
+  <!-- ============ VIEW: DASHBOARD ============ -->
+  <section id="view-dashboard" class="view active">
+    <div id="championBanner"></div>
+    <div class="stat-grid" id="dashTiles"></div>
+    <div class="dash-cols">
+      <div class="card">
+        <h2 class="card-title">⚡ Hasil Terbaru</h2>
+        <div id="recentResults"></div>
+      </div>
+      <div class="card">
+        <h2 class="card-title">🚀 Cara Pakai</h2>
+        <ol class="steps">
+          <li><b>Pengaturan</b> — isi nama event, game, format & aturan poin.</li>
+          <li><b>Tim</b> — daftarkan semua peserta.</li>
+          <li><b>Bracket / Liga / Battle</b> — klik "Generate", lalu input skor tiap match.</li>
+          <li><b>Dashboard</b> — pantau progres & juara otomatis. 🏆</li>
+        </ol>
       </div>
     </div>
-    <!-- Chip status turnamen (diisi oleh js/app.js) -->
-    <div class="status-chips" id="statusChips"></div>
-  </header>
+  </section>
 
-  <!-- ================= NAVIGASI ================= -->
-  <nav class="mainnav" id="mainNav">
-    <button class="nav-btn active" data-view="dashboard" onclick="switchView('dashboard')">📊 Dashboard</button>
-    <button class="nav-btn" data-view="teams" onclick="switchView('teams')">👥 Tim <span class="pill" id="pillTeams">0</span></button>
-    <button class="nav-btn fmt" data-view="bracket" data-format="bracket" onclick="switchView('bracket')">🏆 Bracket</button>
-    <button class="nav-btn fmt" data-view="league" data-format="league" onclick="switchView('league')">📋 Liga</button>
-    <button class="nav-btn fmt" data-view="battle" data-format="battle" onclick="switchView('battle')">🔥 Battle Points</button>
-    <button class="nav-btn" data-view="settings" onclick="switchView('settings')">⚙️ Pengaturan</button>
-  </nav>
-
-  <main>
-
-    <!-- ============ VIEW: DASHBOARD ============ -->
-    <section id="view-dashboard" class="view active">
-      <div id="championBanner"></div>
-      <div class="stat-grid" id="dashTiles"></div>
-      <div class="dash-cols">
-        <div class="card">
-          <h2 class="card-title">⚡ Hasil Terbaru</h2>
-          <div id="recentResults"></div>
-        </div>
-        <div class="card">
-          <h2 class="card-title">🚀 Cara Pakai</h2>
-          <ol class="steps">
-            <li><b>Pengaturan</b> — isi nama event, game, format & aturan poin.</li>
-            <li><b>Tim</b> — daftarkan semua peserta.</li>
-            <li><b>Bracket / Liga / Battle</b> — klik "Generate", lalu input skor tiap match.</li>
-            <li><b>Dashboard</b> — pantau progres & juara otomatis. 🏆</li>
-          </ol>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============ VIEW: TIM ============ -->
-    <section id="view-teams" class="view">
-      <div class="card">
-        <h2 class="card-title">➕ Daftarkan Tim</h2>
-        <form class="team-form" onsubmit="addTeam(event)">
-          <input id="tName" placeholder="Nama tim * (wajib)" required maxlength="30">
-          <input id="tTag" placeholder="Tag (mis. EVOS)" maxlength="6" style="text-transform:uppercase">
-          <input id="tPlayers" placeholder="Nama player, pisahkan koma" class="grow">
-          <button class="btn btn-gold" type="submit">+ Tambah Tim</button>
-        </form>
-      </div>
-      <div class="card">
-        <div class="card-head">
-          <h2 class="card-title">👥 Tim Terdaftar</h2>
-          <button class="btn btn-ghost btn-sm" onclick="shuffleTeams()">🎲 Acak Urutan Seed</button>
-        </div>
-        <div id="teamList"></div>
-      </div>
-    </section>
-
-    <!-- ============ VIEW: BRACKET ============ -->
-    <section id="view-bracket" class="view">
-      <div class="card">
-        <div class="card-head wrap">
-          <div>
-            <h2 class="card-title">🏆 Bagan Gugur (Single Elimination)</h2>
-            <p class="hint" id="bracketInfo"></p>
-          </div>
-          <div class="btn-row">
-            <button class="btn btn-ghost btn-sm" onclick="generateBracket(true)">🎲 Generate + Acak</button>
-            <button class="btn btn-gold" onclick="generateBracket(false)">⚡ Generate Bracket</button>
-            <button class="btn btn-ghost btn-sm" onclick="copyBracket()">📋 Salin Jadwal</button>
-          </div>
-        </div>
-        <div id="bracketWrap" class="bracket-scroll"></div>
-      </div>
-    </section>
-
-    <!-- ============ VIEW: LIGA ============ -->
-    <section id="view-league" class="view">
-      <div class="card">
-        <div class="card-head wrap">
-          <div>
-            <h2 class="card-title">📋 Sistem Liga (Round Robin)</h2>
-            <p class="hint">Semua tim saling bertemu. Menang/Seri/Kalah dapat poin sesuai Pengaturan.</p>
-          </div>
-          <div class="btn-row">
-            <button class="btn btn-gold" onclick="generateLeague()">⚡ Generate Jadwal</button>
-            <button class="btn btn-ghost btn-sm" onclick="copyLeague()">📋 Salin Jadwal</button>
-          </div>
-        </div>
-        <div id="leagueFixtures"></div>
-      </div>
-      <div class="card">
-        <h2 class="card-title">🏅 Klasemen</h2>
-        <div id="leagueTable"></div>
-      </div>
-    </section>
-
-    <!-- ============ VIEW: BATTLE POINTS ============ -->
-    <section id="view-battle" class="view">
-      <div class="card">
-        <div class="card-head wrap">
-          <div>
-            <h2 class="card-title">🔥 Battle Points (ala Free Fire / PUBG)</h2>
-            <p class="hint" id="battleInfo"></p>
-          </div>
-          <button class="btn btn-gold" onclick="addBattle()">➕ Tambah Match</button>
-        </div>
-        <div id="battleList"></div>
-      </div>
-      <div class="card">
-        <h2 class="card-title">🏅 Klasemen Battle</h2>
-        <div id="battleTable"></div>
-      </div>
-    </section>
-
-    <!-- ============ VIEW: PENGATURAN ============ -->
-    <section id="view-settings" class="view">
-      <form class="card" onsubmit="submitSettings(event)">
-        <h2 class="card-title">⚙️ Pengaturan Turnamen</h2>
-        <div class="form-grid">
-          <label>Nama Turnamen <input id="stName" required placeholder="mis. Piala Warnet Ceria 2026"></label>
-          <label>Game
-            <!-- ✏️ Daftar game bisa ditambah di js/config.js (GAME_PRESETS) -->
-            <select id="stGame" onchange="applyGamePreset(this.value)">
-              <option value="mlbb">Mobile Legends (MLBB)</option>
-              <option value="ff">Free Fire (FF)</option>
-              <option value="pubg">PUBG Mobile</option>
-              <option value="valorant">Valorant</option>
-              <option value="efootball">eFootball</option>
-            </select>
-          </label>
-          <label>Lokasi / Platform <input id="stVenue" placeholder="mis. Warnet GG / Online via Zoom"></label>
-          <label>Tanggal Mulai <input id="stDate" type="date"></label>
-          <label>Total Hadiah <input id="stPrize" placeholder="mis. Rp 5.000.000"></label>
-          <label>Mode Pelaksanaan
-            <div class="radio-row">
-              <label class="mini"><input type="radio" name="stMode" value="online"> 🌐 Online</label>
-              <label class="mini"><input type="radio" name="stMode" value="offline" checked> 🏟️ Offline</label>
-            </div>
-          </label>
-        </div>
-
-        <h3 class="form-sub">Format Turnamen</h3>
-        <div class="format-cards">
-          <label class="format-card"><input type="radio" name="stFormat" value="bracket" onchange="toggleRulePanels()">
-            <b>🏆 Bracket</b><small>Sistem gugur. Cocok: MLBB, Valorant.</small></label>
-          <label class="format-card"><input type="radio" name="stFormat" value="league" onchange="toggleRulePanels()">
-            <b>📋 Liga</b><small>Round robin + klasemen poin.</small></label>
-          <label class="format-card"><input type="radio" name="stFormat" value="battle" onchange="toggleRulePanels()">
-            <b>🔥 Battle Points</b><small>Placement + eliminasi. Cocok: FF, PUBG.</small></label>
-        </div>
-
-        <!-- Panel aturan BRACKET -->
-        <div class="rule-panel" data-format="bracket">
-          <h3 class="form-sub">Aturan Bracket</h3>
-          <div class="form-grid small">
-            <label>Best of (BO)
-              <select id="stBo"><option value="1">BO 1</option><option value="3">BO 3</option><option value="5">BO 5</option><option value="7">BO 7</option></select>
-            </label>
-            <label class="mini check"><input type="checkbox" id="stThird"> Perebutkan Juara 3</label>
-          </div>
-        </div>
-
-        <!-- Panel aturan LIGA -->
-        <div class="rule-panel" data-format="league">
-          <h3 class="form-sub">Aturan Poin Liga</h3>
-          <div class="form-grid small">
-            <label>Poin Menang <input id="stWin" type="number" value="3" min="0"></label>
-            <label>Poin Seri <input id="stDraw" type="number" value="1" min="0"></label>
-            <label>Poin Kalah <input id="stLose" type="number" value="0" min="0"></label>
-          </div>
-        </div>
-
-        <!-- Panel aturan BATTLE -->
-        <div class="rule-panel" data-format="battle">
-          <h3 class="form-sub">Aturan Battle Points</h3>
-          <div class="form-grid small">
-            <label class="wide">Poin Placement (urutan juara 1, 2, 3, … pisahkan koma)
-              <input id="stPlacement" placeholder="12,10,9,8,7,6,5,4,3,2,1,1">
-            </label>
-            <label>Poin per Eliminasi <input id="stKill" type="number" value="1" min="0"></label>
-          </div>
-        </div>
-
-        <div class="btn-row" style="margin-top:20px">
-          <button class="btn btn-gold" type="submit">💾 Simpan Pengaturan</button>
-        </div>
+  <!-- ============ VIEW: TIM ============ -->
+  <section id="view-teams" class="view">
+    <div class="card">
+      <h2 class="card-title">➕ Daftarkan Tim</h2>
+      <form class="team-form" onsubmit="addTeam(event)">
+        <input id="tName" placeholder="Nama tim * (wajib)" required maxlength="30">
+        <input id="tTag" placeholder="Tag (mis. EVOS)" maxlength="6" style="text-transform:uppercase">
+        <input id="tPlayers" placeholder="Nama player, pisahkan koma" class="grow">
+        <button class="btn btn-gold" type="submit">+ Tambah Tim</button>
       </form>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <h2 class="card-title">👥 Tim Terdaftar</h2>
+        <button class="btn btn-ghost btn-sm" onclick="shuffleTeams()">🎲 Acak Urutan Seed</button>
+      </div>
+      <div id="teamList"></div>
+    </div>
+  </section>
 
-      <div class="card danger-zone">
-        <h2 class="card-title">🗄️ Data</h2>
+  <!-- ============ VIEW: BRACKET ============ -->
+  <section id="view-bracket" class="view">
+    <div class="card">
+      <div class="card-head wrap">
+        <div>
+          <h2 class="card-title">🏆 Bagan Gugur (Single Elimination)</h2>
+          <p class="hint" id="bracketInfo"></p>
+        </div>
         <div class="btn-row">
-          <button class="btn btn-ghost" onclick="exportData()">⬇️ Export JSON</button>
-          <button class="btn btn-ghost" onclick="document.getElementById('importFile').click()">⬆️ Import JSON</button>
-          <input type="file" id="importFile" accept=".json" hidden onchange="importData(this)">
-          <button class="btn btn-ghost" onclick="loadDemo()">🎮 Muat Data Contoh</button>
-          <button class="btn btn-danger" onclick="resetAll()">🗑️ Reset Semua</button>
+          <button class="btn btn-ghost btn-sm" onclick="generateBracket(true)">🎲 Generate + Acak</button>
+          <button class="btn btn-gold" onclick="generateBracket(false)">⚡ Generate Bracket</button>
+          <button class="btn btn-ghost btn-sm" onclick="copyBracket()">📋 Salin Jadwal</button>
         </div>
       </div>
-    </section>
-  </main>
+      <div id="bracketWrap" class="bracket-scroll"></div>
+    </div>
+  </section>
 
-  <!-- Tempat modal & notifikasi dirender oleh JS -->
-  <div id="modalRoot"></div>
-  <div id="toastRoot"></div>
+  <!-- ============ VIEW: LIGA ============ -->
+  <section id="view-league" class="view">
+    <div class="card">
+      <div class="card-head wrap">
+        <div>
+          <h2 class="card-title">📋 Sistem Liga (Round Robin)</h2>
+          <p class="hint">Semua tim saling bertemu. Menang/Seri/Kalah dapat poin sesuai Pengaturan.</p>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-gold" onclick="generateLeague()">⚡ Generate Jadwal</button>
+          <button class="btn btn-ghost btn-sm" onclick="copyLeague()">📋 Salin Jadwal</button>
+        </div>
+      </div>
+      <div id="leagueFixtures"></div>
+    </div>
+    <div class="card">
+      <h2 class="card-title">🏅 Klasemen</h2>
+      <div id="leagueTable"></div>
+    </div>
+  </section>
 
-  <!-- ✏️ URUTAN SCRIPT JANGAN DITUKAR (saling bergantung) -->
-  <script src="js/config.js"></script>
-  <script src="js/utils.js"></script>
-  <script src="js/storage.js"></script>
-  <script src="js/teams.js"></script>
-  <script src="js/bracket.js"></script>
-  <script src="js/league.js"></script>
-  <script src="js/battle.js"></script>
-  <script src="js/app.js"></script>
+  <!-- ============ VIEW: BATTLE POINTS ============ -->
+  <section id="view-battle" class="view">
+    <div class="card">
+      <div class="card-head wrap">
+        <div>
+          <h2 class="card-title">🔥 Battle Points (ala Free Fire / PUBG)</h2>
+          <p class="hint" id="battleInfo"></p>
+        </div>
+        <button class="btn btn-gold" onclick="addBattle()">➕ Tambah Match</button>
+      </div>
+      <div id="battleList"></div>
+    </div>
+    <div class="card">
+      <h2 class="card-title">🏅 Klasemen Battle</h2>
+      <div id="battleTable"></div>
+    </div>
+  </section>
+
+  <!-- ============ VIEW: PENGATURAN ============ -->
+  <section id="view-settings" class="view">
+    <form class="card" onsubmit="submitSettings(event)">
+      <h2 class="card-title">⚙️ Pengaturan Turnamen</h2>
+      <div class="form-grid">
+        <label>Nama Turnamen <input id="stName" required placeholder="mis. Piala Warnet Ceria 2026"></label>
+        <label>Game
+          <select id="stGame" onchange="applyGamePreset(this.value)">
+            <option value="mlbb">Mobile Legends (MLBB)</option>
+            <option value="ff">Free Fire (FF)</option>
+            <option value="pubg">PUBG Mobile</option>
+            <option value="valorant">Valorant</option>
+            <option value="efootball">eFootball</option>
+          </select>
+        </label>
+        <label>Lokasi / Platform <input id="stVenue" placeholder="mis. Warnet GG / Online via Zoom"></label>
+        <label>Tanggal Mulai <input id="stDate" type="date"></label>
+        <label>Total Hadiah <input id="stPrize" placeholder="mis. Rp 5.000.000"></label>
+        <label>Mode Pelaksanaan
+          <div class="radio-row">
+            <label class="mini"><input type="radio" name="stMode" value="online"> 🌐 Online</label>
+            <label class="mini"><input type="radio" name="stMode" value="offline" checked> 🏟️ Offline</label>
+          </div>
+        </label>
+      </div>
+
+      <h3 class="form-sub">Format Turnamen</h3>
+      <div class="format-cards">
+        <label class="format-card"><input type="radio" name="stFormat" value="bracket" onchange="toggleRulePanels()">
+          <b>🏆 Bracket</b><small>Sistem gugur. Cocok: MLBB, Valorant.</small></label>
+        <label class="format-card"><input type="radio" name="stFormat" value="league" onchange="toggleRulePanels()">
+          <b>📋 Liga</b><small>Round robin + klasemen poin.</small></label>
+        <label class="format-card"><input type="radio" name="stFormat" value="battle" onchange="toggleRulePanels()">
+          <b>🔥 Battle Points</b><small>Placement + eliminasi. Cocok: FF, PUBG.</small></label>
+      </div>
+
+      <div class="rule-panel" data-format="bracket">
+        <h3 class="form-sub">Aturan Bracket</h3>
+        <div class="form-grid small">
+          <label>Best of (BO)
+            <select id="stBo"><option value="1">BO 1</option><option value="3">BO 3</option><option value="5">BO 5</option><option value="7">BO 7</option></select>
+          </label>
+          <label class="mini check"><input type="checkbox" id="stThird"> Perebutkan Juara 3</label>
+        </div>
+      </div>
+
+      <div class="rule-panel" data-format="league">
+        <h3 class="form-sub">Aturan Poin Liga</h3>
+        <div class="form-grid small">
+          <label>Poin Menang <input id="stWin" type="number" value="3" min="0"></label>
+          <label>Poin Seri <input id="stDraw" type="number" value="1" min="0"></label>
+          <label>Poin Kalah <input id="stLose" type="number" value="0" min="0"></label>
+        </div>
+      </div>
+
+      <div class="rule-panel" data-format="battle">
+        <h3 class="form-sub">Aturan Battle Points</h3>
+        <div class="form-grid small">
+          <label class="wide">Poin Placement (urutan juara 1, 2, 3, … pisahkan koma)
+            <input id="stPlacement" placeholder="12,10,9,8,7,6,5,4,3,2,1,1">
+          </label>
+          <label>Poin per Eliminasi <input id="stKill" type="number" value="1" min="0"></label>
+        </div>
+      </div>
+
+      <div class="btn-row" style="margin-top:20px">
+        <button class="btn btn-gold" type="submit">💾 Simpan Pengaturan</button>
+      </div>
+    </form>
+
+    <div class="card">
+      <h2 class="card-title">🗄️ Data</h2>
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="exportData()">⬇️ Export JSON</button>
+        <button class="btn btn-ghost" onclick="document.getElementById('importFile').click()">⬆️ Import JSON</button>
+        <input type="file" id="importFile" accept=".json" hidden onchange="importData(this)">
+        <button class="btn btn-ghost" onclick="loadDemo()">🎮 Muat Data Contoh</button>
+        <button class="btn btn-danger" onclick="resetAll()">🗑️ Reset Semua</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="modalRoot"></div>
+<div id="toastRoot"></div>
+
+<script>
+/* ============================================================
+   1) CONFIG — ✏️ pusat pengaturan default
+   ============================================================ */
+const GAME_PRESETS = {
+  mlbb:     { label:'Mobile Legends (MLBB)', format:'bracket', bo:3 },
+  ff:       { label:'Free Fire (FF)',        format:'battle' },
+  pubg:     { label:'PUBG Mobile',           format:'battle' },
+  valorant: { label:'Valorant',              format:'bracket', bo:3 },
+  efootball:{ label:'eFootball',             format:'league' },
+};
+const DEFAULT_PLACEMENT = [12,10,9,8,7,6,5,4,3,2,1,1]; // ✏️ poin placement ala FF
+const EXPORT_FILENAME = 'arena-kit-turnamen.json';
+const DEMO_TEAMS = [
+  { name:'Garuda Esports',    tag:'GRD', players:['Rizky','Dimas','Fajar','Aldo','Bayu'] },
+  { name:'Raja Naga',         tag:'RJN', players:['Satria','Kevin','Yoga'] },
+  { name:'Banteng Merah',     tag:'BTM', players:['Gilang','Reza','Iqbal','Fikri'] },
+  { name:'Elang Hitam Squad', tag:'EHS', players:['Doni','Andi','Rafli'] },
+  { name:'Serigala Utara',    tag:'SRU', players:['Bima','Candra','Erik','Gilang'] },
+  { name:'Phoenix Bali',      tag:'PNX', players:['Made','Ketut','Nyoman'] },
+  { name:'Cendrawasih GG',    tag:'CGG', players:['Yosua','Fernando','Ariel'] },
+  { name:'Harimau Sumatera',  tag:'HRS', players:['Andika','Putra','Randy','Zaki'] },
+];
+function defaultState(){
+  return {
+    tournament:{ name:'Turnamen Saya', game:'mlbb', mode:'offline', venue:'', date:'', prize:'', format:'bracket' },
+    rules:{ bo:3, thirdPlace:true, winPts:3, drawPts:1, losePts:0, placement:[...DEFAULT_PLACEMENT], killPts:1 },
+    teams:[],
+    bracket:{ rounds:[], third:null, championId:null, runnerUpId:null, thirdId:null },
+    league:{ fixtures:[], generated:false },
+    battle:{ matches:[] },
+  };
+}
+
+/* ============================================================
+   2) UTILS — fungsi bantu
+   ============================================================ */
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function teamById(id){ return S.teams.find(t=>t.id===id)||null; }
+function teamName(id){ const t=teamById(id); return t?esc(t.name):'—'; }
+function fmtDate(d){ if(!d)return''; try{return new Date(d+'T00:00').toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'});}catch(e){return d;} }
+function toast(msg,type='ok'){
+  const el=document.createElement('div'); el.className='toast '+type; el.textContent=msg;
+  document.getElementById('toastRoot').appendChild(el);
+  requestAnimationFrame(()=>el.classList.add('show'));
+  setTimeout(()=>{ el.classList.remove('show'); setTimeout(()=>el.remove(),350); },2600);
+}
+function openModal(html){
+  document.getElementById('modalRoot').innerHTML=
+    `<div class="modal-back" onclick="if(event.target===this)closeModal()"><div class="modal">${html}</div></div>`;
+}
+function closeModal(){ document.getElementById('modalRoot').innerHTML=''; }
+document.addEventListener('keydown',e=>{ if(e.key==='Escape')closeModal(); });
+
+/* ============================================================
+   3) STORAGE — simpan/muat localStorage
+   ============================================================ */
+const STORAGE_KEY='arenakit_v1';
+let S=defaultState();
+function loadState(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(!raw)return defaultState();
+    const p=JSON.parse(raw), def=defaultState();
+    return { ...def,...p,
+      tournament:{...def.tournament,...p.tournament},
+      rules:{...def.rules,...p.rules},
+      bracket:{...def.bracket,...p.bracket},
+      league:{...def.league,...p.league},
+      battle:{...def.battle,...p.battle} };
+  }catch(e){ return defaultState(); }
+}
+function save(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(S)); }
+function resetAll(){
+  if(!confirm('YAKIN reset SEMUA data turnamen? Tidak bisa dibatalkan!'))return;
+  S=defaultState(); save(); refreshAll(); toast('Semua data direset.','err');
+}
+function exportData(){
+  const blob=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download=EXPORT_FILENAME; a.click();
+  toast('Data berhasil di-export. 💾');
+}
+function importData(input){
+  const file=input.files[0]; if(!file)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    try{
+      const d=JSON.parse(e.target.result);
+      if(!d.tournament||!d.teams)throw 0;
+      S={...defaultState(),...d}; save(); refreshAll(); toast('Data berhasil di-import! ✅');
+    }catch(err){ toast('File JSON tidak valid.','err'); }
+  };
+  r.readAsText(file); input.value='';
+}
+
+/* ============================================================
+   4) TEAMS — manajemen tim
+   ============================================================ */
+function addTeam(ev){
+  ev.preventDefault();
+  const name=document.getElementById('tName').value.trim();
+  if(!name)return toast('Nama tim wajib diisi.','err');
+  const playersRaw=document.getElementById('tPlayers').value;
+  S.teams.push({ id:uid(), name,
+    tag:document.getElementById('tTag').value.trim().toUpperCase(),
+    players:playersRaw.split(/[,;]/).map(p=>p.trim()).filter(Boolean) });
+  save(); refreshAll(); ev.target.reset();
+  toast(`Tim "${name}" terdaftar! 👥`);
+}
+function shuffleTeams(){
+  for(let i=S.teams.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [S.teams[i],S.teams[j]]=[S.teams[j],S.teams[i]]; }
+  save(); renderTeams(); toast('Urutan seed diacak. 🎲');
+}
+function deleteTeam(id){
+  const t=teamById(id);
+  const hasData=S.bracket.rounds.length||S.league.generated||S.battle.matches.length;
+  const warn=hasData?'\n\n⚠️ Jadwal / bracket / battle yang sudah dibuat akan DIRESET.':'';
+  if(!confirm(`Hapus tim "${t?t.name:''}"?${warn}`))return;
+  S.teams=S.teams.filter(x=>x.id!==id);
+  if(hasData){
+    S.bracket={rounds:[],third:null,championId:null,runnerUpId:null,thirdId:null};
+    S.league={fixtures:[],generated:false};
+    S.battle={matches:[]};
+  }
+  save(); refreshAll(); toast('Tim dihapus.','err');
+}
+function openTeamModal(id){
+  const t=teamById(id); if(!t)return;
+  openModal(`
+    <h3>✏️ Edit Tim</h3>
+    <label>Nama Tim <input id="emName" value="${esc(t.name)}"></label>
+    <label>Tag <input id="emTag" value="${esc(t.tag)}" maxlength="6" style="text-transform:uppercase"></label>
+    <label>Players (pisah koma) <input id="emPlayers" value="${esc(t.players.join(', '))}"></label>
+    <div class="btn-row" style="justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="closeModal()">Batal</button>
+      <button class="btn btn-gold" onclick="saveTeam('${id}')">Simpan</button>
+    </div>`);
+}
+function saveTeam(id){
+  const t=teamById(id); if(!t)return;
+  t.name=document.getElementById('emName').value.trim()||t.name;
+  t.tag=document.getElementById('emTag').value.trim().toUpperCase();
+  t.players=document.getElementById('emPlayers').value.split(/[,;]/).map(p=>p.trim()).filter(Boolean);
+  save(); closeModal(); refreshAll(); toast('Data tim diperbarui. ✅');
+}
+function renderTeams(){
+  const box=document.getElementById('teamList');
+  document.getElementById('pillTeams').textContent=S.teams.length;
+  if(!S.teams.length){
+    box.innerHTML=`<div class="empty"><span class="big">👥</span>Belum ada tim terdaftar.<br>Gunakan form di atas untuk menambahkan tim.</div>`;
+    return;
+  }
+  box.innerHTML=`<table><thead><tr><th class="num">Seed</th><th>Tim</th><th>Players</th><th class="num">Aksi</th></tr></thead><tbody>`+
+    S.teams.map((t,i)=>`
+      <tr>
+        <td class="num"><span class="seed-no">${i+1}</span></td>
+        <td>${t.tag?`<span class="tag-badge">${esc(t.tag)}</span>`:''}<b>${esc(t.name)}</b></td>
+        <td style="color:var(--muted);font-size:13px">${esc(t.players.join(', '))||'—'}</td>
+        <td class="num">
+          <button class="icon-btn" title="Edit" onclick="openTeamModal('${t.id}')">✏️</button>
+          <button class="icon-btn" title="Hapus" onclick="deleteTeam('${t.id}')">🗑️</button>
+        </td>
+      </tr>`).join('')+`</tbody></table>`;
+}
+
+/* ============================================================
+   5) BRACKET — bagan gugur
+   ============================================================ */
+function neededWins(){ return Math.ceil((S.rules.bo||1)/2); }
+function seedOrder(size){
+  let arr=[1];
+  while(arr.length<size){ const m=arr.length*2+1,next=[]; arr.forEach(s=>{next.push(s);next.push(m-s);}); arr=next; }
+  return arr;
+}
+function newMatch(r,i){ return {id:uid(),round:r,idx:i,a:null,b:null,scoreA:0,scoreB:0,done:false,winnerId:null,bye:false}; }
+function roundLabel(c){
+  if(c===1)return'🏆 FINAL'; if(c===2)return'SEMIFINAL'; if(c===4)return'PEREMPAT FINAL';
+  if(c===8)return'16 BESAR'; return'BABAK '+(c*2)+' BESAR';
+}
+function generateBracket(doShuffle){
+  if(S.teams.length<2)return toast('Minimal 2 tim untuk membuat bracket.','err');
+  if(S.bracket.rounds.length&&!confirm('Bracket sudah ada. Timpa dengan yang baru?'))return;
+  const pool=S.teams.slice();
+  if(doShuffle){ for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; } }
+  let size=2; while(size<pool.length)size*=2;
+  const rounds=[];
+  for(let r=0;r<Math.log2(size);r++){
+    const list=[],count=size/Math.pow(2,r+1);
+    for(let i=0;i<count;i++)list.push(newMatch(r,i));
+    rounds.push(list);
+  }
+  seedOrder(size).forEach((seedNum,slot)=>{
+    const m=rounds[0][slot>>1], team=pool[seedNum-1]||null;
+    if(slot%2===0)m.a=team?team.id:null; else m.b=team?team.id:null;
+  });
+  S.bracket={ rounds, third:S.rules.thirdPlace?newMatch(99,0):null, championId:null, runnerUpId:null, thirdId:null };
+  recomputeBracket(); save(); refreshAll();
+  toast(`Bracket ${pool.length} tim berhasil dibuat! 🎮`);
+}
+function fixBye(m){
+  if(!m.a&&!m.b){ m.done=false;m.winnerId=null;m.bye=false;return; }
+  if(m.a&&!m.b){ m.done=true;m.winnerId=m.a;m.bye=true; }
+  else if(!m.a&&m.b){ m.done=true;m.winnerId=m.b;m.bye=true; }
+  else m.bye=false;
+}
+function recomputeBracket(){
+  const B=S.bracket; if(!B.rounds.length)return;
+  B.rounds[0].forEach(fixBye);
+  B.championId=null; B.runnerUpId=null;
+  for(let r=1;r<B.rounds.length;r++){
+    for(const m of B.rounds[r]){
+      const p=B.rounds[r-1];
+      const a=p[m.idx*2].done?p[m.idx*2].winnerId:null;
+      const b=p[m.idx*2+1].done?p[m.idx*2+1].winnerId:null;
+      if(a!==m.a||b!==m.b){ m.a=a;m.b=b;m.scoreA=0;m.scoreB=0;m.done=false;m.winnerId=null; }
+    }
+  }
+  const final=B.rounds[B.rounds.length-1][0];
+  if(final.done&&final.winnerId){
+    B.championId=final.winnerId;
+    B.runnerUpId=final.winnerId===final.a?final.b:final.a;
+  }
+  if(B.third){
+    const L=B.rounds.length;
+    if(L>=2){
+      const semis=B.rounds[L-2];
+      if(semis.length===2&&semis.every(m=>m.done)){
+        B.third.a=semis[0].winnerId===semis[0].a?semis[0].b:semis[0].a;
+        B.third.b=semis[1].winnerId===semis[1].a?semis[1].b:semis[1].a;
+      }else if(B.third.a||B.third.b){
+        B.third.a=null;B.third.b=null;B.third.done=false;B.third.winnerId=null;B.thirdId=null;
+      }
+    }
+    if(B.third.done)B.thirdId=B.third.winnerId;
+  }
+}
+function saveBracketResult(r,i){
+  const m=S.bracket.rounds[r][i];
+  if(!m.a||!m.b)return toast('Peserta belum lengkap.','err');
+  const need=neededWins();
+  const a=parseInt(document.getElementById(`bs-${r}-${i}-a`).value,10);
+  const b=parseInt(document.getElementById(`bs-${r}-${i}-b`).value,10);
+  if(isNaN(a)||isNaN(b)||a<0||b<0)return toast('Skor harus angka ≥ 0.','err');
+  if(a>need||b>need)return toast(`Maksimal kemenangan seri ini = ${need} (BO${S.rules.bo}).`,'err');
+  if(a===need&&b===need)return toast('Keduanya tidak bisa sama-sama menang.','err');
+  m.scoreA=a; m.scoreB=b;
+  if(Math.max(a,b)===need){ m.done=true; m.winnerId=a>b?m.a:m.b; toast(`${teamName(m.winnerId)} menang seri! 🎉`); }
+  else{ m.done=false; m.winnerId=null; toast('Skor sementara disimpan. ⏳'); }
+  recomputeBracket(); save(); refreshAll();
+}
+function saveThirdResult(){
+  const m=S.bracket.third;
+  if(!m||!m.a||!m.b)return toast('Peserta juara 3 belum lengkap.','err');
+  const need=neededWins();
+  const a=parseInt(document.getElementById('bt-a').value,10);
+  const b=parseInt(document.getElementById('bt-b').value,10);
+  if(isNaN(a)||isNaN(b)||a<0||b<0)return toast('Skor harus angka ≥ 0.','err');
+  if(a===b)return toast('Juara 3 tidak boleh seri.','err');
+  if(a>need||b>need)return toast(`Maksimal ${need} kemenangan.`,'err');
+  m.scoreA=a;m.scoreB=b;m.done=true;m.winnerId=a>b?m.a:m.b;
+  recomputeBracket(); save(); refreshAll(); toast('Juara 3 ditentukan! 🥉');
+}
+function matchCardHTML(m,r,i,idA,idB,extraLabel){
+  const tA=teamById(m.a), tB=teamById(m.b);
+  const ready=m.a&&m.b;
+  const status=m.bye?['BYE','bye']:m.done?['SELESAI','done']:ready?['SIAP MAIN','ready']:['MENUNGGU','wait'];
+  const winA=m.done&&m.winnerId===m.a, winB=m.done&&m.winnerId===m.b;
+  const teamRow=(t,side,isWin,isLose)=>`
+    <div class="m-team ${isWin?'winner':''} ${isLose?'loser':''}">
+      <span class="name">${t?esc(t.name):'<small>menunggu…</small>'}</span>
+      ${ready&&!m.bye?`<input id="${side==='a'?idA:idB}" type="number" min="0" max="${neededWins()}" value="${side==='a'?m.scoreA:m.scoreB}">`:''}
+    </div>`;
+  return `
+  <div class="match ${m.done?'done':''} ${m.bye?'bye':''}">
+    <div class="m-head"><span>${extraLabel||('M'+(i+1))} · BO${S.rules.bo}</span><span class="m-status ${status[1]}">${status[0]}</span></div>
+    ${teamRow(tA,'a',winA,winB)}
+    ${teamRow(tB,'b',winB,winA)}
+    ${ready&&!m.bye?`<button class="btn btn-gold btn-sm" onclick="${r===99?'saveThirdResult()':`saveBracketResult(${r},${i})`}">💾 Simpan Hasil</button>`:''}
+  </div>`;
+}
+function renderBracket(){
+  const B=S.bracket, box=document.getElementById('bracketWrap');
+  document.getElementById('bracketInfo').textContent=
+    `Format aktif: Best of ${S.rules.bo}${S.rules.thirdPlace?' • Juara 3: ON':''}. Urutan tim saat Generate = seed.`;
+  if(!B.rounds.length){
+    box.innerHTML=`<div class="empty"><span class="big">🏆</span>Bracket belum dibuat.<br>Daftarkan minimal 2 tim lalu klik <b>Generate Bracket</b>.</div>`;
+    return;
+  }
+  let html='<div class="bracket">';
+  B.rounds.forEach((round,r)=>{
+    html+=`<div class="b-round"><div class="b-round-title">${roundLabel(round.length)}</div>`;
+    round.forEach((m,i)=>{ html+=`<div class="b-item">${matchCardHTML(m,r,i,`bs-${r}-${i}-a`,`bs-${r}-${i}-b`)}</div>`; });
+    html+='</div>';
+  });
+  html+='</div>';
+  if(B.third&&B.third.a&&B.third.b){
+    html+=`<div class="bracket" style="margin-top:22px"><div class="b-round"><div class="b-round-title">🥉 PEREBUTAN JUARA 3</div><div class="b-item">${matchCardHTML(B.third,99,0,'bt-a','bt-b','JUARA 3')}</div></div></div>`;
+  }
+  const champ=teamById(B.championId), run=teamById(B.runnerUpId), third=teamById(B.thirdId);
+  html+=`<div class="card" style="margin-top:22px"><h2 class="card-title">PODIUM</h2><div class="podium">
+    <div class="p1">🥇 <b>${champ?esc(champ.name):'—'}</b></div>
+    <div>🥈 ${run?esc(run.name):'—'}</div>
+    ${B.third?`<div>🥉 ${third?esc(third.name):'—'}</div>`:''}
+  </div></div>`;
+  box.innerHTML=html;
+}
+function copyBracket(){
+  if(!S.bracket.rounds.length)return toast('Belum ada bracket.','err');
+  let txt=`🏆 ${S.tournament.name} — BRACKET (BO${S.rules.bo})\n`;
+  S.bracket.rounds.forEach((round,r)=>{
+    txt+=`\n— ${roundLabel(round.length).replace('🏆 ','')} —\n`;
+    round.forEach(m=>{
+      if(m.bye)txt+=`• ${teamName(m.a||m.b)} → BYE (lolos otomatis)\n`;
+      else if(m.a&&m.b)txt+=`• ${teamName(m.a)} vs ${teamName(m.b)}${m.done?` (${m.scoreA}-${m.scoreB})`:''}\n`;
+    });
+  });
+  navigator.clipboard.writeText(txt).then(()=>toast('Jadwal disalin ke clipboard! 📋'));
+}
+function bracketStats(){
+  const ms=S.bracket.rounds.flat().filter(m=>!m.bye);
+  return { total:ms.length, done:ms.filter(m=>m.done).length, champ:S.bracket.championId };
+}
+
+/* ============================================================
+   6) LEAGUE — liga + klasemen
+   ============================================================ */
+function roundRobin(ids){
+  const arr=ids.slice();
+  if(arr.length%2)arr.push(null);
+  const n=arr.length, rounds=[];
+  for(let r=0;r<n-1;r++){
+    const round=[];
+    for(let i=0;i<n/2;i++){ const a=arr[i],b=arr[n-1-i]; if(a&&b)round.push({a,b}); }
+    rounds.push(round);
+    arr.splice(1,0,arr.pop());
+  }
+  return rounds;
+}
+function generateLeague(){
+  if(S.teams.length<2)return toast('Minimal 2 tim untuk liga.','err');
+  if(S.league.generated&&!confirm('Jadwal liga sudah ada. Timpa?'))return;
+  const fixtures=[];
+  roundRobin(S.teams.map(t=>t.id)).forEach((round,ri)=>{
+    round.forEach(p=>fixtures.push({id:uid(),round:ri+1,a:p.a,b:p.b,scoreA:null,scoreB:null,done:false}));
+  });
+  S.league={fixtures,generated:true};
+  save(); refreshAll(); toast(`Jadwal liga ${fixtures.length} pertandingan dibuat! 📋`);
+}
+function saveLeagueResult(fid){
+  const f=S.league.fixtures.find(x=>x.id===fid); if(!f)return;
+  const a=parseInt(document.getElementById(`ls-${fid}-a`).value,10);
+  const b=parseInt(document.getElementById(`ls-${fid}-b`).value,10);
+  if(isNaN(a)||isNaN(b)||a<0||b<0)return toast('Isi skor kedua tim (angka ≥ 0).','err');
+  f.scoreA=a; f.scoreB=b; f.done=true;
+  save(); refreshAll(); toast('Hasil liga disimpan. ✅');
+}
+function computeStandings(){
+  const rows=S.teams.map(t=>({t,main:0,w:0,d:0,l:0,gf:0,ga:0,pts:0}));
+  const map=Object.fromEntries(rows.map(r=>[r.t.id,r]));
+  S.league.fixtures.filter(f=>f.done).forEach(f=>{
+    const A=map[f.a],Bm=map[f.b]; if(!A||!Bm)return;
+    A.main++;Bm.main++;
+    A.gf+=f.scoreA;A.ga+=f.scoreB;
+    Bm.gf+=f.scoreB;Bm.ga+=f.scoreA;
+    if(f.scoreA>f.scoreB){A.w++;Bm.l++;A.pts+=S.rules.winPts;Bm.pts+=S.rules.losePts;}
+    else if(f.scoreA<f.scoreB){Bm.w++;A.l++;Bm.pts+=S.rules.winPts;A.pts+=S.rules.losePts;}
+    else{A.d++;Bm.d++;A.pts+=S.rules.drawPts;Bm.pts+=S.rules.drawPts;}
+  });
+  return rows.sort((x,y)=> y.pts-x.pts || (y.gf-y.ga)-(x.gf-x.ga) || y.gf-x.gf || x.t.name.localeCompare(y.t.name));
+}
+function renderLeague(){
+  const fx=document.getElementById('leagueFixtures'), tb=document.getElementById('leagueTable');
+  if(!S.league.generated){
+    fx.innerHTML=`<div class="empty"><span class="big">📋</span>Jadwal liga belum dibuat.<br>Klik <b>Generate Jadwal</b> setelah tim terdaftar.</div>`;
+    tb.innerHTML=''; return;
+  }
+  const maxRound=Math.max(...S.league.fixtures.map(f=>f.round));
+  let html='';
+  for(let r=1;r<=maxRound;r++){
+    const list=S.league.fixtures.filter(f=>f.round===r);
+    html+=`<div class="round-block"><h4>PEKAN ${r}</h4>`+list.map(f=>`
+      <div class="fx-row">
+        <span class="fname right">${teamName(f.a)}</span>
+        <input id="ls-${f.id}-a" type="number" min="0" value="${f.scoreA??''}" placeholder="-">
+        <span class="vs">VS</span>
+        <input id="ls-${f.id}-b" type="number" min="0" value="${f.scoreB??''}" placeholder="-">
+        <span class="fname">${teamName(f.b)}</span>
+        ${f.done?'<span class="fx-done">✔ SELESAI</span>':`<button class="btn btn-gold btn-sm" onclick="saveLeagueResult('${f.id}')">Simpan</button>`}
+      </div>`).join('')+`</div>`;
+  }
+  fx.innerHTML=html;
+  const rows=computeStandings();
+  tb.innerHTML=`<table><thead><tr><th class="num">#</th><th>Tim</th><th class="num">M</th><th class="num">M</th><th class="num">S</th><th class="num">K</th><th class="num">GM</th><th class="num">GK</th><th class="num">SG</th><th class="num">Poin</th></tr></thead><tbody>`+
+    rows.map((r,i)=>`
+      <tr class="${i===0?'rank-1':''}">
+        <td class="num">${i+1}</td>
+        <td>${r.t.tag?`<span class="tag-badge">${esc(r.t.tag)}</span>`:''}${esc(r.t.name)}</td>
+        <td class="num">${r.main}</td><td class="num">${r.w}</td><td class="num">${r.d}</td><td class="num">${r.l}</td>
+        <td class="num">${r.gf}</td><td class="num">${r.ga}</td>
+        <td class="num">${r.gf-r.ga>0?'+':''}${r.gf-r.ga}</td>
+        <td class="num"><b>${r.pts}</b></td>
+      </tr>`).join('')+`</tbody></table>
+    <p class="hint" style="margin-top:10px">Poin: Menang ${S.rules.winPts} • Seri ${S.rules.drawPts} • Kalah ${S.rules.losePts}. M=Main, S=Seri, GM/GK=Gol Masuk/Kemasukan, SG=Selisih Gol.</p>`;
+}
+function copyLeague(){
+  if(!S.league.generated)return toast('Belum ada jadwal liga.','err');
+  let txt=`📋 ${S.tournament.name} — JADWAL LIGA\n`;
+  const maxRound=Math.max(...S.league.fixtures.map(f=>f.round));
+  for(let r=1;r<=maxRound;r++){
+    txt+=`\nPekan ${r}:\n`;
+    S.league.fixtures.filter(f=>f.round===r).forEach(f=>txt+=`• ${teamName(f.a)} vs ${teamName(f.b)}\n`);
+  }
+  navigator.clipboard.writeText(txt).then(()=>toast('Jadwal liga disalin! 📋'));
+}
+function leagueStats(){
+  const fx=S.league.fixtures, leader=computeStandings()[0];
+  return { total:fx.length, done:fx.filter(f=>f.done).length, champ:null,
+    leader:(fx.some(f=>f.done)&&leader)?leader.t.name:null };
+}
+
+/* ============================================================
+   7) BATTLE — poin battle royale (ala FF)
+   ============================================================ */
+function addBattle(){
+  if(!S.teams.length)return toast('Daftarkan tim terlebih dahulu.','err');
+  S.battle.matches.push({ id:uid(), label:'Match '+(S.battle.matches.length+1), results:[], done:false });
+  save(); renderBattle(); toast('Match battle ditambahkan. 🔥');
+}
+function deleteBattle(mid){
+  if(!confirm('Hapus match ini beserta hasilnya?'))return;
+  S.battle.matches=S.battle.matches.filter(m=>m.id!==mid);
+  save(); refreshAll(); toast('Match dihapus.','err');
+}
+function saveBattle(mid){
+  const m=S.battle.matches.find(x=>x.id===mid); if(!m)return;
+  const entries=[], used=new Set(); let err=null;
+  S.teams.forEach(t=>{
+    const pEl=document.getElementById(`bp-${mid}-${t.id}`);
+    const kEl=document.getElementById(`bk-${mid}-${t.id}`);
+    const pVal=pEl.value.trim(), kVal=kEl.value.trim();
+    if(!pVal&&!kVal)return;
+    const place=parseInt(pVal,10), kills=kVal?parseInt(kVal,10):0;
+    if(isNaN(place)||place<1||place>S.teams.length)err=`Peringkat ${t.name} harus 1–${S.teams.length}.`;
+    else if(isNaN(kills)||kills<0)err=`Eliminasi ${t.name} harus angka ≥ 0.`;
+    else if(used.has(place))err=`Peringkat #${place} dobel!`;
+    else{ used.add(place); entries.push({teamId:t.id,place,kills}); }
+  });
+  if(err)return toast(err,'err');
+  if(!entries.length)return toast('Isi minimal satu tim.','err');
+  m.results=entries; m.done=true;
+  save(); refreshAll();
+  const booyah=entries.find(e=>e.place===1);
+  toast(`Hasil disimpan! 🏆 Booyah: ${teamName(booyah?booyah.teamId:null)}`);
+}
+function computeBattleStandings(){
+  const rows=S.teams.map(t=>({t,main:0,booyah:0,kills:0,pts:0}));
+  const map=Object.fromEntries(rows.map(r=>[r.t.id,r]));
+  S.battle.matches.filter(m=>m.done).forEach(m=>{
+    m.results.forEach(r=>{
+      const row=map[r.teamId]; if(!row)return;
+      row.main++; row.kills+=r.kills;
+      if(r.place===1)row.booyah++;
+      row.pts+=(S.rules.placement[r.place-1]??0)+r.kills*(S.rules.killPts||0);
+    });
+  });
+  return rows.sort((x,y)=> y.pts-x.pts || y.booyah-x.booyah || y.kills-x.kills);
+}
+function renderBattle(){
+  const box=document.getElementById('battleList'), tb=document.getElementById('battleTable');
+  document.getElementById('battleInfo').textContent=
+    `Poin placement: [${S.rules.placement.join(', ')}] • Eliminasi = ${S.rules.killPts} poin.`;
+  if(!S.battle.matches.length){
+    box.innerHTML=`<div class="empty"><span class="big">🔥</span>Belum ada match battle.<br>Klik <b>Tambah Match</b> untuk setiap game yang dimainkan.</div>`;
+    tb.innerHTML=''; return;
+  }
+  box.innerHTML=S.battle.matches.map(m=>`
+    <div class="round-block">
+      <div class="card-head">
+        <h4>${esc(m.label)} ${m.done?'<span class="fx-done">✔ SELESAI</span>':''}</h4>
+        <button class="icon-btn" title="Hapus match" onclick="deleteBattle('${m.id}')">🗑️</button>
+      </div>
+      <table><thead><tr><th>Tim</th><th class="num">Peringkat</th><th class="num">Eliminasi</th></tr></thead><tbody>
+      ${S.teams.map(t=>{
+        const res=m.results.find(r=>r.teamId===t.id);
+        return `<tr>
+          <td>${t.tag?`<span class="tag-badge">${esc(t.tag)}</span>`:''}${esc(t.name)}</td>
+          <td class="num"><input id="bp-${m.id}-${t.id}" type="number" min="1" max="${S.teams.length}" style="width:80px" value="${res?res.place:''}" placeholder="—"></td>
+          <td class="num"><input id="bk-${m.id}-${t.id}" type="number" min="0" style="width:80px" value="${res?res.kills:''}" placeholder="—"></td>
+        </tr>`;
+      }).join('')}
+      </tbody></table>
+      <p class="hint" style="margin:8px 0">Baris kosong = tim tidak ikut match ini. Peringkat tidak boleh dobel.</p>
+      <button class="btn btn-gold" onclick="saveBattle('${m.id}')">💾 Simpan Hasil Match</button>
+    </div>`).join('');
+  const rows=computeBattleStandings();
+  tb.innerHTML=`<table><thead><tr><th class="num">#</th><th>Tim</th><th class="num">Main</th><th class="num">Booyah</th><th class="num">Eliminasi</th><th class="num">Total Poin</th></tr></thead><tbody>`+
+    rows.map((r,i)=>`
+      <tr class="${i===0?'rank-1':''}">
+        <td class="num">${i+1}</td>
+        <td>${r.t.tag?`<span class="tag-badge">${esc(r.t.tag)}</span>`:''}${esc(r.t.name)}</td>
+        <td class="num">${r.main}</td><td class="num">${r.booyah?('🏆 '+r.booyah):0}</td>
+        <td class="num">${r.kills}</td><td class="num"><b>${r.pts}</b></td>
+      </tr>`).join('')+`</tbody></table>`;
+}
+function battleStats(){
+  const ms=S.battle.matches, leader=computeBattleStandings()[0];
+  return { total:ms.length, done:ms.filter(m=>m.done).length, champ:null,
+    leader:(ms.some(m=>m.done)&&leader&&leader.pts>0)?leader.t.name:null };
+}
+
+/* ============================================================
+   8) APP — router, dashboard, pengaturan, demo, init
+   ============================================================ */
+const LABEL_FORMAT={bracket:'BRACKET',league:'LIGA',battle:'BATTLE POINTS'};
+function switchView(name){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.view===name));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function renderNavBadges(){
+  document.querySelectorAll('.nav-btn.fmt').forEach(b=>
+    b.classList.toggle('is-active-format',b.dataset.format===S.tournament.format));
+}
+function renderHeaderStatus(){
+  const t=S.tournament, g=GAME_PRESETS[t.game];
+  const chips=[
+    `<span class="chip gold">🎯 ${LABEL_FORMAT[t.format]}</span>`,
+    `<span class="chip">${g?g.label:t.game}</span>`,
+    `<span class="chip">${t.mode==='online'?'🌐 ONLINE':'🏟️ OFFLINE'}</span>`
+  ];
+  if(t.date)chips.push(`<span class="chip">📅 ${fmtDate(t.date)}</span>`);
+  if(t.venue)chips.push(`<span class="chip">📍 ${esc(t.venue)}</span>`);
+  document.getElementById('statusChips').innerHTML=chips.join('');
+}
+function activeStats(){
+  if(S.tournament.format==='bracket')return bracketStats();
+  if(S.tournament.format==='league')return leagueStats();
+  return battleStats();
+}
+function renderDashboard(){
+  const st=activeStats();
+  const prog=st.total?Math.round(st.done/st.total*100):0;
+  document.getElementById('dashTiles').innerHTML=`
+    <div class="tile"><div class="t-label">Tim Terdaftar</div><div class="t-value">${S.teams.length}</div></div>
+    <div class="tile"><div class="t-label">Pertandingan</div><div class="t-value">${st.done}<small style="font-size:16px;color:var(--muted)">/${st.total}</small></div></div>
+    <div class="tile"><div class="t-label">Progress</div><div class="t-value">${prog}%</div></div>
+    <div class="tile"><div class="t-label">Status</div><div class="t-value" style="font-size:20px">${st.champ?'🏆 SELESAI':'🔴 BERJALAN'}</div></div>`;
+  const champTeam=teamById(S.bracket.championId);
+  document.getElementById('championBanner').innerHTML=champTeam?`
+    <div class="champion-banner">
+      <div class="cb-cup">🏆</div>
+      <div class="cb-label">JUARA ${esc(S.tournament.name)}</div>
+      <div class="cb-name">${esc(champTeam.name)}</div>
+      ${S.tournament.prize?`<p class="hint">💰 ${esc(S.tournament.prize)}</p>`:''}
+    </div>`:'';
+  const box=document.getElementById('recentResults');
+  let items=[];
+  if(S.tournament.format==='bracket'){
+    items=S.bracket.rounds.flat().filter(m=>m.done&&!m.bye).slice(-6).reverse()
+      .map(m=>`<div class="result-row"><span>${teamName(m.a)} vs ${teamName(m.b)}</span><span class="sc">${m.scoreA} – ${m.scoreB}</span></div>`);
+  }else if(S.tournament.format==='league'){
+    items=S.league.fixtures.filter(f=>f.done).slice(-6).reverse()
+      .map(f=>`<div class="result-row"><span>${teamName(f.a)} vs ${teamName(f.b)}</span><span class="sc">${f.scoreA} – ${f.scoreB}</span></div>`);
+  }else{
+    items=S.battle.matches.filter(m=>m.done).slice(-6).reverse().map(m=>{
+      const win=m.results.find(r=>r.place===1);
+      return `<div class="result-row"><span>🔥 ${esc(m.label)} — Booyah: <b>${teamName(win?win.teamId:null)}</b></span><span class="sc">${win?win.kills:0} elims</span></div>`;
+    });
+  }
+  box.innerHTML=items.length?items.join(''):'<p class="hint">Belum ada hasil. Mulai input skor di tab format kamu. 🚀</p>';
+}
+function renderSettings(){
+  const t=S.tournament, r=S.rules;
+  document.getElementById('stName').value=t.name;
+  document.getElementById('stGame').value=t.game;
+  document.getElementById('stVenue').value=t.venue;
+  document.getElementById('stDate').value=t.date;
+  document.getElementById('stPrize').value=t.prize;
+  const mR=document.querySelector(`input[name=stMode][value=${t.mode}]`); if(mR)mR.checked=true;
+  const fR=document.querySelector(`input[name=stFormat][value=${t.format}]`); if(fR)fR.checked=true;
+  document.getElementById('stBo').value=r.bo;
+  document.getElementById('stThird').checked=r.thirdPlace;
+  document.getElementById('stWin').value=r.winPts;
+  document.getElementById('stDraw').value=r.drawPts;
+  document.getElementById('stLose').value=r.losePts;
+  document.getElementById('stPlacement').value=r.placement.join(',');
+  document.getElementById('stKill').value=r.killPts;
+  toggleRulePanels();
+}
+function toggleRulePanels(){
+  const el=document.querySelector('input[name=stFormat]:checked');
+  if(!el)return;
+  document.querySelectorAll('.rule-panel').forEach(p=>p.classList.toggle('show',p.dataset.format===el.value));
+}
+function applyGamePreset(key){
+  const p=GAME_PRESETS[key]; if(!p)return;
+  const fR=document.querySelector(`input[name=stFormat][value=${p.format}]`);
+  if(fR){ fR.checked=true; toggleRulePanels(); }
+  if(p.bo)document.getElementById('stBo').value=p.bo;
+  toast(`Preset ${p.label} diterapkan. 🎯`);
+}
+function submitSettings(ev){
+  ev.preventDefault();
+  const v=id=>document.getElementById(id).value.trim();
+  S.tournament.name=v('stName')||'Turnamen Tanpa Nama';
+  S.tournament.game=v('stGame');
+  S.tournament.venue=v('stVenue');
+  S.tournament.date=v('stDate');
+  S.tournament.prize=v('stPrize');
+  S.tournament.mode=document.querySelector('input[name=stMode]:checked').value;
+  S.tournament.format=document.querySelector('input[name=stFormat]:checked').value;
+  S.rules.bo=parseInt(v('stBo'),10)||1;
+  S.rules.thirdPlace=document.getElementById('stThird').checked;
+  S.rules.winPts=parseInt(v('stWin'),10)||0;
+  S.rules.drawPts=parseInt(v('stDraw'),10)||0;
+  S.rules.losePts=parseInt(v('stLose'),10)||0;
+  S.rules.killPts=parseInt(v('stKill'),10)||0;
+  const pl=v('stPlacement').split(/[,\s]+/).map(Number).filter(n=>!isNaN(n)&&n>=0);
+  if(pl.length)S.rules.placement=pl; else toast('Poin placement kosong — dipakai nilai default.','err');
+  save(); refreshAll(); toast('Pengaturan disimpan! ⚙️');
+}
+function generateBracketSilent(){
+  const pool=S.teams.slice();
+  let size=2; while(size<pool.length)size*=2;
+  const rounds=[];
+  for(let r=0;r<Math.log2(size);r++){
+    const list=[]; for(let i=0;i<size/Math.pow(2,r+1);i++)list.push(newMatch(r,i));
+    rounds.push(list);
+  }
+  seedOrder(size).forEach((seedNum,slot)=>{
+    const m=rounds[0][slot>>1], team=pool[seedNum-1]||null;
+    if(slot%2===0)m.a=team?team.id:null; else m.b=team?team.id:null;
+  });
+  S.bracket={rounds,third:S.rules.thirdPlace?newMatch(99,0):null,championId:null,runnerUpId:null,thirdId:null};
+  recomputeBracket();
+}
+function generateLeagueSilent(){
+  const fixtures=[];
+  roundRobin(S.teams.map(t=>t.id)).forEach((round,ri)=>
+    round.forEach(p=>fixtures.push({id:uid(),round:ri+1,a:p.a,b:p.b,scoreA:null,scoreB:null,done:false})));
+  S.league={fixtures,generated:true};
+}
+function loadDemo(){
+  if(S.teams.length&&!confirm('Data tim sekarang akan diganti data contoh. Lanjut?'))return;
+  S=defaultState();
+  S.tournament.name='Piala Arena 2026';
+  S.tournament.venue='Online — Discord & Game';
+  S.tournament.date=new Date().toISOString().slice(0,10);
+  S.tournament.prize='Rp 5.000.000';
+  S.teams=DEMO_TEAMS.map(d=>({id:uid(),name:d.name,tag:d.tag,players:d.players.slice()}));
+  const rnd=n=>Math.floor(Math.random()*n);
+  if(S.tournament.format==='bracket'){
+    generateBracketSilent();
+    S.bracket.rounds[0].forEach(m=>{
+      if(m.a&&m.b&&!m.bye){
+        const need=neededWins(), aWins=rnd(2)===0;
+        m.scoreA=aWins?need:rnd(need);
+        m.scoreB=aWins?rnd(need):need;
+        m.done=true; m.winnerId=aWins?m.a:m.b;
+      }
+    });
+    recomputeBracket();
+  }else if(S.tournament.format==='league'){
+    generateLeagueSilent();
+    S.league.fixtures.filter(f=>f.round===1).forEach(f=>{ f.scoreA=rnd(4); f.scoreB=rnd(4); f.done=true; });
+  }else{
+    for(let i=1;i<=2;i++){
+      const pool=S.teams.slice(), results=[]; let place=1;
+      while(pool.length){ const t=pool.splice(rnd(pool.length),1)[0]; results.push({teamId:t.id,place:place++,kills:rnd(13)}); }
+      S.battle.matches.push({id:uid(),label:'Match '+i,results,done:true});
+    }
+  }
+  save(); refreshAll(); toast('Data contoh dimuat! Silakan jelajah. 🎮');
+}
+function refreshAll(){
+  renderHeaderStatus(); renderNavBadges(); renderDashboard();
+  renderTeams(); renderBracket(); renderLeague(); renderBattle(); renderSettings();
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  S=loadState();
+  refreshAll();
+  switchView('dashboard');
+  console.log('%c🎮 ARENA KIT siap! GGWP!','color:#ffc53d;font-weight:bold');
+});
+</script>
 </body>
 </html>
